@@ -1,7 +1,8 @@
 <!doctype html>
 <!-- SPDX-License-Identifier: GPL-3.0-only -->
 <!-- The landing page of a site that offers the SMK-37 build alone (web/make_site.py --smk-only: a fork's site, the
-     installer webapp/smk37/ at its heart). make_site.py fills 0.29.2-trs-smk37 0.29.2 5 November 2026 TRS MIDI OUT: the 3.5 mm jack plays an FM-1 on LOOM-8, or any synth <li>The keyboard&#x27;s 3.5 mm jack is now a MIDI output. With Options &gt; TRS MIDI Out On (the default) it carries what USB MIDI out carries, with or without a computer.</li>
+     installer webapp/smk37/ at its heart). make_site.py fills 0.29.2-trs-smk37.1 0.29.2 5 November 2026 K8 picks the MIDI channel; TRS MIDI OUT <li>K8 on the home screen now turns the MIDI Perform channel (1 to 16, shown as it turns), OPT + K8 the MIDI Bass channel: the chord moves to another LOOM-8 track without the Options menu. The chord&#x27;s effect send, K8&#x27;s old job, is the faders&#x27;.</li>
+      <li>The keyboard&#x27;s 3.5 mm jack is now a MIDI output. With Options &gt; TRS MIDI Out On (the default) it carries what USB MIDI out carries, with or without a computer.</li>
       <li>On the jack: the chord on the MIDI Perform channel (1), the bass on MIDI Bass (2), the wheels, the pedal, and the MIDI clock with start and stop when MIDI Clock is Out.</li>
       <li>An FM-1 running LOOM-8 plays channels 1 to 8 on its tracks 1 to 8, and 12 to 16 on the selected track. A new LOOM-8 project has a drum kit on track 1, which drops chord notes: set MIDI Perform to a synth track&#x27;s channel (2 to 8) or to 12.</li>
       <li>Options &gt; TRS MIDI Out Off leaves the jack quiet; USB MIDI keeps working either way. The option is kept across power-off with the global save.</li>
@@ -9,9 +10,9 @@
      <li>A fork of Quixotic7&#x27;s ChoralRoot (the TRS output was asked for in its issue 38). Community-tested, not tested by the maintainer; the jack has not yet been tried on a unit by this fork either: the UART setup is the stock firmware&#x27;s as genkigenki&#x27;s porting guide read it, and the same driver ships in Vector37. If the option&#x27;s line on the keyboard reads &#x27;UART not answering&#x27;, please report it.</li>
       <li>Recording on LOOM-8: hold REC while you play (REC + PLAY keeps it on); a note lands on the track of its channel. A LOOM-8 step holds four notes, so a chord of five or more keeps its lowest four. CC 1 (the mod wheel) moves the track&#x27;s LFO amount there; sustain and expression pedals do nothing on LOOM-8.</li>
       <li>Use a type A 3.5 mm to MIDI adapter for a DIN synth; a plain TRS cable reaches an FM-1&#x27;s MIDI IN jack. SysEx (backups, the sound editors&#x27; dumps) stays on USB.</li>
-      <li>Updating from 0.29-smk37 keeps your settings, sounds, loops and favourites; going back to it works too (it simply does not use the jack).</li> <li><b>SMK-37 Pro</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37.fwsc" download>choralroot-0.29.2-trs-smk37.fwsc</a> · 651496 bytes · SMK-37 Pro_920<br><code>sha256 ee9c9875208a70558653f81358db1abb124b58cd54606d89771125c60f224478</code></li>
-      <li><b>SMK-37 Elite</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37-elite.fwsc" download>choralroot-0.29.2-trs-smk37-elite.fwsc</a> · 651500 bytes · SMK-37 Elite_920<br><code>sha256 576d6897c33ed8b07b4170097859c1b9afd5f1d3450bdc29ef5d0edc99d0bd78</code></li>
-      <li><b>MKE-P37</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37-mke.fwsc" download>choralroot-0.29.2-trs-smk37-mke.fwsc</a> · 651492 bytes · MKE-P37_920<br><code>sha256 404b0aec4db8edd505f00574e2a6c797b0fa47a9a2647e11c07b66a503f9cfce</code></li> <div class="try"><a class="btn b-green" href="webapp/smk37/emu/">Try it first</a><p class="note">The same firmware in your browser, on the SMK-37's panel: the keys and pads with the mouse or the computer keyboard, Web MIDI out. No keyboard needed.</p></div> https://github.com/davidpryan/ChoralRootFM1; no other templating. site.css and the font are upstream's landing page's. -->
+      <li>Updating from 0.29-smk37 keeps your settings, sounds, loops and favourites; going back to it works too (it simply does not use the jack).</li> <li><b>SMK-37 Pro</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37.1.fwsc" download>choralroot-0.29.2-trs-smk37.1.fwsc</a> · 651496 bytes · SMK-37 Pro_920<br><code>sha256 c0e2174d8d34d7155e5f15289c79fb4529334a76f03955e2d451c8dd48a68f4b</code></li>
+      <li><b>SMK-37 Elite</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37.1-elite.fwsc" download>choralroot-0.29.2-trs-smk37.1-elite.fwsc</a> · 651500 bytes · SMK-37 Elite_920<br><code>sha256 d132f68a97f4fa2e0863375a3025f24497712afa9cb60540a53bbaced517d1a6</code></li>
+      <li><b>MKE-P37</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37.1-mke.fwsc" download>choralroot-0.29.2-trs-smk37.1-mke.fwsc</a> · 651492 bytes · MKE-P37_920<br><code>sha256 d74922e31fee36ec0044fba93087d943e03e5a705b0bb6f308ea9d2599278608</code></li> <div class="try"><a class="btn b-green" href="webapp/smk37/emu/">Try it first</a><p class="note">The same firmware in your browser, on the SMK-37's panel: the keys and pads with the mouse or the computer keyboard, Web MIDI out. No keyboard needed.</p></div> https://github.com/davidpryan/ChoralRootFM1; no other templating. site.css and the font are upstream's landing page's. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -28,7 +29,7 @@
   <div class="wrap">
     <h1><span>ChoralRoot</span> <span>for the SMK-37</span></h1>
     <p class="lede">Quixotic7's chord instrument on the M-Vave SMK-37, with the keyboard's 3.5 mm jack as a <b>MIDI output</b>: it plays an FM-1 running LOOM-8, or any synth, with no computer.</p>
-    <p class="ver">Version 0.29.2-trs-smk37 (5 November 2026): a fork of ChoralRoot 0.29.2. GPL-3.0. A community test build, not tested by ChoralRoot's maintainer.</p>
+    <p class="ver">Version 0.29.2-trs-smk37.1 (5 November 2026): a fork of ChoralRoot 0.29.2. GPL-3.0. A community test build, not tested by ChoralRoot's maintainer.</p>
   </div>
   <div class="stripes" aria-hidden="true"><i class="s-red"></i><i class="s-orange"></i><i class="s-cream"></i></div>
 </header>
@@ -39,13 +40,13 @@
   <div class="wrap">
     <h2 id="h-get">Get it</h2>
     <div class="try">
-      <a class="btn b-red" href="webapp/smk37/">Install 0.29.2-trs-smk37</a>
+      <a class="btn b-red" href="webapp/smk37/">Install 0.29.2-trs-smk37.1</a>
       <p class="note">From Chrome or Edge on a computer, over the USB cable: the installer picks your keyboard's model (SMK-37 Pro, Elite, MKE-P37 or Starrykey 37 Play), checks the package, backs a keyboard already on ChoralRoot up to a file, and finishes an interrupted install. Read what it says before you tick the box.</p>
     </div>
     <div class="try"><a class="btn b-green" href="webapp/smk37/emu/">Try it first</a><p class="note">The same firmware in your browser, on the SMK-37's panel: the keys and pads with the mouse or the computer keyboard, Web MIDI out. No keyboard needed.</p></div>
     <div class="try">
       <a class="btn b-cream" href="firmware/smk37/">Files</a>
-      <p class="note">The packages and their checksums, for the command line:<br><code class="cmd">python3 tools/fm1_install.py <span class="nw">choralroot-0.29.2-trs-smk37.fwsc</span></code></p>
+      <p class="note">The packages and their checksums, for the command line:<br><code class="cmd">python3 tools/fm1_install.py <span class="nw">choralroot-0.29.2-trs-smk37.1.fwsc</span></code></p>
     </div>
     <div class="try">
       <a class="btn b-blue" href="https://github.com/davidpryan/ChoralRootFM1">Source</a>
@@ -56,8 +57,9 @@
 
 <section aria-labelledby="h-new">
   <div class="wrap">
-    <h2 id="h-new">TRS MIDI OUT: the 3.5 mm jack plays an FM-1 on LOOM-8, or any synth</h2>
+    <h2 id="h-new">K8 picks the MIDI channel; TRS MIDI OUT</h2>
     <ul class="news">
+      <li>K8 on the home screen now turns the MIDI Perform channel (1 to 16, shown as it turns), OPT + K8 the MIDI Bass channel: the chord moves to another LOOM-8 track without the Options menu. The chord&#x27;s effect send, K8&#x27;s old job, is the faders&#x27;.</li>
       <li>The keyboard&#x27;s 3.5 mm jack is now a MIDI output. With Options &gt; TRS MIDI Out On (the default) it carries what USB MIDI out carries, with or without a computer.</li>
       <li>On the jack: the chord on the MIDI Perform channel (1), the bass on MIDI Bass (2), the wheels, the pedal, and the MIDI clock with start and stop when MIDI Clock is Out.</li>
       <li>An FM-1 running LOOM-8 plays channels 1 to 8 on its tracks 1 to 8, and 12 to 16 on the selected track. A new LOOM-8 project has a drum kit on track 1, which drops chord notes: set MIDI Perform to a synth track&#x27;s channel (2 to 8) or to 12.</li>
@@ -96,9 +98,9 @@
   <div class="wrap">
     <h2 id="h-files">Packages</h2>
     <ul class="news">
-      <li><b>SMK-37 Pro</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37.fwsc" download>choralroot-0.29.2-trs-smk37.fwsc</a> · 651496 bytes · SMK-37 Pro_920<br><code>sha256 ee9c9875208a70558653f81358db1abb124b58cd54606d89771125c60f224478</code></li>
-      <li><b>SMK-37 Elite</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37-elite.fwsc" download>choralroot-0.29.2-trs-smk37-elite.fwsc</a> · 651500 bytes · SMK-37 Elite_920<br><code>sha256 576d6897c33ed8b07b4170097859c1b9afd5f1d3450bdc29ef5d0edc99d0bd78</code></li>
-      <li><b>MKE-P37</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37-mke.fwsc" download>choralroot-0.29.2-trs-smk37-mke.fwsc</a> · 651492 bytes · MKE-P37_920<br><code>sha256 404b0aec4db8edd505f00574e2a6c797b0fa47a9a2647e11c07b66a503f9cfce</code></li>
+      <li><b>SMK-37 Pro</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37.1.fwsc" download>choralroot-0.29.2-trs-smk37.1.fwsc</a> · 651496 bytes · SMK-37 Pro_920<br><code>sha256 c0e2174d8d34d7155e5f15289c79fb4529334a76f03955e2d451c8dd48a68f4b</code></li>
+      <li><b>SMK-37 Elite</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37.1-elite.fwsc" download>choralroot-0.29.2-trs-smk37.1-elite.fwsc</a> · 651500 bytes · SMK-37 Elite_920<br><code>sha256 d132f68a97f4fa2e0863375a3025f24497712afa9cb60540a53bbaced517d1a6</code></li>
+      <li><b>MKE-P37</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37.1-mke.fwsc" download>choralroot-0.29.2-trs-smk37.1-mke.fwsc</a> · 651492 bytes · MKE-P37_920<br><code>sha256 d74922e31fee36ec0044fba93087d943e03e5a705b0bb6f308ea9d2599278608</code></li>
     </ul>
     <p class="note">Each has a single-core twin (<code>-1core</code>) for a keyboard that crashes or freezes with the standard one. <a href="firmware/smk37/SHA256SUMS">SHA256SUMS</a> · <a href="firmware/LICENSE">LICENSE</a> · <a href="firmware/LICENSING.md">LICENSING.md</a> · <a href="firmware/LICENSES/">LICENSES/</a></p>
   </div>
