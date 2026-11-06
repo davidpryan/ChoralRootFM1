@@ -3,6 +3,41 @@
   "repo": "https://github.com/davidpryan/ChoralRootFM1",
   "releases": [
     {
+      "version": "0.29.2-trs-smk37.1",
+      "base": "0.29.2",
+      "date": "2026-11-05",
+      "tag": "v0.29.2-trs-smk37.1",
+      "title": "K8 picks the MIDI channel; TRS MIDI OUT",
+      "bullets": [
+        "K8 on the home screen now turns the MIDI Perform channel (1 to 16, shown as it turns), OPT + K8 the MIDI Bass channel: the chord moves to another LOOM-8 track without the Options menu. The chord's effect send, K8's old job, is the faders'.",
+        "The keyboard's 3.5 mm jack is now a MIDI output. With Options > TRS MIDI Out On (the default) it carries what USB MIDI out carries, with or without a computer.",
+        "On the jack: the chord on the MIDI Perform channel (1), the bass on MIDI Bass (2), the wheels, the pedal, and the MIDI clock with start and stop when MIDI Clock is Out.",
+        "An FM-1 running LOOM-8 plays channels 1 to 8 on its tracks 1 to 8, and 12 to 16 on the selected track. A new LOOM-8 project has a drum kit on track 1, which drops chord notes: set MIDI Perform to a synth track's channel (2 to 8) or to 12.",
+        "Options > TRS MIDI Out Off leaves the jack quiet; USB MIDI keeps working either way. The option is kept across power-off with the global save.",
+        "Everything else is ChoralRoot 0.29.2 on the SMK-37, as the 0.29-smk37 build: the same sounds, screens and controls, with your settings, sounds, loops and favourites stored as before."
+      ],
+      "notes": [
+        "A fork of Quixotic7's ChoralRoot (the TRS output was asked for in its issue 38). Community-tested, not tested by the maintainer; the jack has not yet been tried on a unit by this fork either: the UART setup is the stock firmware's as genkigenki's porting guide read it, and the same driver ships in Vector37. If the option's line on the keyboard reads 'UART not answering', please report it.",
+        "Recording on LOOM-8: hold REC while you play (REC + PLAY keeps it on); a note lands on the track of its channel. A LOOM-8 step holds four notes, so a chord of five or more keeps its lowest four. CC 1 (the mod wheel) moves the track's LFO amount there; sustain and expression pedals do nothing on LOOM-8.",
+        "Use a type A 3.5 mm to MIDI adapter for a DIN synth; a plain TRS cable reaches an FM-1's MIDI IN jack. SysEx (backups, the sound editors' dumps) stays on USB.",
+        "Updating from 0.29-smk37 keeps your settings, sounds, loops and favourites; going back to it works too (it simply does not use the jack)."
+      ],
+      "packages": {
+        "pro": {
+          "sha256": "c0e2174d8d34d7155e5f15289c79fb4529334a76f03955e2d451c8dd48a68f4b",
+          "sha256_1core": "5e6725b45c1393f455dac8831758d320884299bf621f20d875f5220d614341ad"
+        },
+        "elite": {
+          "sha256": "d132f68a97f4fa2e0863375a3025f24497712afa9cb60540a53bbaced517d1a6",
+          "sha256_1core": "6c879e87d52053fe1ed554d6b447da38fd8d601cf7795eafca0e1cb0799a942e"
+        },
+        "mke": {
+          "sha256": "d74922e31fee36ec0044fba93087d943e03e5a705b0bb6f308ea9d2599278608",
+          "sha256_1core": "f7426a214e64b8a2d9f00072b66aa413dd2807c7830bba99eb4b949f3d7d0132"
+        }
+      }
+    },
+    {
       "version": "0.29.2-trs-smk37",
       "base": "0.29.2",
       "date": "2026-11-05",

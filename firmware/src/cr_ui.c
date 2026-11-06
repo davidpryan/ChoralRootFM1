@@ -5510,6 +5510,24 @@ static void cu_knob(uint32_t role, int32_t s)
         cu_param_turn(cu_perf_mode(), CU_PERF_KNOB[cu_perf_mode()][0], s, 1);
         break;
     case EN_K4:
+#if BOARD_SMK37
+        {                                          /* SMK-37: K8 on the home screen is the MIDI Perform channel, with OPT
+                                                    * held the MIDI Bass channel: 1..16, a channel a detent, never Off
+                                                    * (Options > MIDI Perform / MIDI Bass: the same values, Off among
+                                                    * them). The chord part's send, KNOB 4's job on the FM-1, is the
+                                                    * faders' on the SMK (SMK37.md "K8"); K8 keeps its other jobs in the
+                                                    * layers, the editor and the dialogs */
+            uint32_t o = cu_shift() ? O_CH_BASS : O_CH_MAIN;
+            int32_t ch = opt_get(o) + (s > 0 ? 1 : -1);
+            ch = ch < 1 ? 1 : ch > 16 ? 16 : ch;
+            if (ch != opt_get(o))
+                opt_set(o, ch);
+            cu_popup_num(ch, 0, "", o == O_CH_BASS ? "MIDI bass ch" : "MIDI chord ch",
+                         o == O_CH_BASS ? CR_COL_ORANGE : CR_COL_WHITE, 1, 16, 16);
+            cu_trace("midi: knob 4 %s channel %d\n", o == O_CH_BASS ? "bass" : "chord", (int)ch);
+            break;
+        }
+#endif
         cu_send_set(0, CU_FX[cs.fx_sel].send, cu_send_step(cu_send(0, CU_FX[cs.fx_sel].send), s, kn.snap));
         cu_send_popup(cu_send(0, CU_FX[cs.fx_sel].send), CU_FX[cs.fx_sel].name, CR_COL_GREEN);
         cu_trace("send: knob 4 %s %u (%u%%)\n", CU_FX[cs.fx_sel].name, (unsigned)cu_send(0, CU_FX[cs.fx_sel].send),

@@ -54,7 +54,8 @@ so the whole keybed plays roots. The SMK-37's buttons and knobs map onto the FM-
 | The mode pads | a tap picks that mode and switches the performance on; the playing mode's pad again switches it off, as a PERF tap. Bright: the mode playing; dim: the others. PERF (ARP) and the PERF layer show the same state |
 | K1 | MASTER (volume): a turn shows the level; it is remembered across power-off |
 | K2 / K3 / K4 | SELECT / ALGORITHM / PRESETS |
-| K5..K8 | KNOB 1..4 (the SAVE menu and the naming help say K5..K8) |
+| K5..K7 | KNOB 1..3 (the SAVE menu and the naming help say K5..K8) |
+| K8 | KNOB 4 in the layers, the editor and the dialogs; on the home screen the **MIDI Perform channel** (1..16, a channel a detent, shown as it turns), with OPT (GLOBE) held the **MIDI Bass channel**: the channels the jack and USB send on, without the Options menu (Options > MIDI Perform / MIDI Bass hold the same values, Off among them). The FM-1's KNOB 4 job there, the chord part's send, is the faders' on the SMK-37 |
 | SCALE / CHORD / NOTE REPEAT | KEY (printed SEL) / BASS (ENV) / LATCH (LFO) |
 | PARA / GLOBE | EDIT / OPT (GLO) |
 | PATCH / BT | HOME / SAVE |
@@ -127,6 +128,10 @@ go); live, knit plays six voices and cane four. ChoralRoot's mod wheel (CC 1) mo
 CC 64 (sustain) and CC 11 (expression) do nothing there. Clock: set Options > MIDI Clock `Out` here and leave LOOM-8's
 CLOCK on `receive` (its default) for its sequencer to follow ChoralRoot's tempo, or set MIDI Clock `Off` here and
 LOOM-8 keeps its own time. LOOM-8 never echoes what comes in.
+
+**K8 picks the channel.** On the home screen K8 turns the MIDI Perform channel and OPT + K8 the MIDI Bass channel, 1
+to 16, so the chord can be moved from one LOOM-8 track to another without a menu (12 follows LOOM-8's selected
+track). The change applies to the next note; a note still sounding ends on the channel it started on.
 
 Not tried on a unit: the UART setup is the stock firmware's as the porting guide read it (status: analysis), and
 Vector37 ships the same driver. [What to test](#what-to-test), item 15.

@@ -256,6 +256,40 @@ console.log("the TRS jack: USB MIDI out's bytes on it, whole messages; Options >
   ok(jack3.length > 0 && jack3.length === want3.length, `On again: the jack sends (${jack3.length} voice bytes, USB ${want3.length})`);
 }
 
+console.log("K8 on the home screen: the MIDI Perform channel; OPT held + K8: the MIDI Bass channel");
+{
+  const d = await load(), ex = d.ex;
+  ex.web_boot();
+  d.render(ms(3000));
+  d.midi();
+  ok(ex.web_smk_midi_ch(0) === 1 && ex.web_smk_midi_ch(1) === 2, `the defaults: chord ch 1, bass ch 2 (${ex.web_smk_midi_ch(0)}, ${ex.web_smk_midi_ch(1)})`);
+  ex.web_smk_enc(7, 2);                       // K8 one detent clockwise (the model's quadrature lands n - 1: as K1's test)
+  d.render(ms(200));
+  ok(ex.web_smk_midi_ch(0) === 2, `K8 right: MIDI Perform ch 2 (${ex.web_smk_midi_ch(0)})`);
+  ex.web_smk_key(19, 100);                    // G4: the chord's note-ons now on channel 2 (0x91)
+  d.render(ms(200));
+  const pk = d.midi(), ons = noteOns(pk), chans = pk.filter((p) => (p & 15) === 9).map((p) => ((p >>> 8) & 15) + 1);
+  ex.web_smk_key(19, 0);
+  d.render(ms(200));
+  ok(ons.length > 0 && chans.every((c) => c === 2), `a chord on channel 2: ${ons.length} note-ons (channels ${[...new Set(chans)].join(",")})`);
+  ex.web_smk_enc(7, -2);                      // and back
+  d.render(ms(200));
+  ok(ex.web_smk_midi_ch(0) === 1, `K8 left: ch 1 again (${ex.web_smk_midi_ch(0)})`);
+  ex.web_smk_enc(7, -4);                      // it stops at 1, never Off
+  d.render(ms(200));
+  ok(ex.web_smk_midi_ch(0) === 1, `K8 further left: still ch 1, never Off (${ex.web_smk_midi_ch(0)})`);
+  ex.web_smk_button(10, 1);                   // GLOBE (OPT) held + K8: the bass channel
+  d.render(ms(100));
+  ex.web_smk_enc(7, 2);
+  d.render(ms(200));
+  ex.web_smk_button(10, 0);
+  d.render(ms(200));
+  ok(ex.web_smk_midi_ch(1) === 3 && ex.web_smk_midi_ch(0) === 1, `OPT + K8 right: MIDI Bass ch 3, Perform untouched (${ex.web_smk_midi_ch(1)}, ${ex.web_smk_midi_ch(0)})`);
+  ex.web_smk_enc(7, 20);                      // the top: 16
+  d.render(ms(300));
+  ok(ex.web_smk_midi_ch(0) === 16, `K8 far right: ch 16 and no further (${ex.web_smk_midi_ch(0)})`);
+}
+
 if (!args.has("--no-page")) {
   console.log("the page (headless Chromium screenshot)");
   const chrome = "/Applications/Chromium.app/Contents/MacOS/Chromium";

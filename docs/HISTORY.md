@@ -6983,3 +6983,14 @@ as `smk_trs` (byte 25, 0 = not stored = On; the reserve 118). The browser emulat
 `run_tests.sh`, `test_web_emu_smk.mjs` checks the jack's bytes against USB's and Off. LOOM-8's tracks listen on
 channels 1 to 8: the chord on its track 1, the bass on its track 2, its CLOCK `receive` under MIDI Clock Out.
 SMK37.md "TRS MIDI OUT" and "What to test" 15, SETTINGS.md, README. Not tried on a unit.
+
+3y227. **K8 picks the MIDI channel (the SMK-37, 0.29.2-trs-smk37.1).** The owner wanted the channel the jack sends on
+at the top level, without the Options menu, and asked which knob would cost least: K8, the FM-1's KNOB 4, whose home
+job (the chord part's send into the selected effect) the SMK's four faders already do. `cr_ui.c cu_knob` EN_K4,
+BOARD_SMK37 only and only on the home screen: the MIDI Perform channel, 1..16 a channel a detent, never Off (the
+Options keep Off); OPT held, the MIDI Bass channel; a popup "MIDI chord ch" / "MIDI bass ch" as the volume's. Through
+`opt_set(O_CH_MAIN / O_CH_BASS)`, so the block stores it as the option does and `cu_route` applies it to the next
+note (a sounding note ends on the channel it started on: cr_ono). In the layers, the editor and the dialogs K8 is what
+it was. `web_smk_midi_ch`, `test_web_emu_smk.mjs` (the emulator's quadrature lands n - 1 detents, as K1's test
+notes). SMK37.md's K8 row and "K8 picks the channel". With LOOM-8 (whose new project has a drum kit on track 1): turn
+K8 to a synth track's channel, or 12 for its selected track.

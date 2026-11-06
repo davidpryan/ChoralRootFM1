@@ -181,6 +181,7 @@ WEB_EXPORT int32_t web_smk_trs_take(void)
     return b;
 }
 WEB_EXPORT void web_smk_trs_mode(uint32_t v) { opt_set(O_TRS, (int32_t)v); }       /* Options > TRS MIDI Out: 0 Off, 1 On */
+WEB_EXPORT uint32_t web_smk_midi_ch(uint32_t part) { return cs.ch[part & 1u]; }    /* MIDI Perform (0) / MIDI Bass (1): 0 Off, 1..16 */
 /* the lights: the 19 button LEDs (0 / 1, hal/smk_input.h's ids: SEQ PLAY's red half is 18), the 16 pads' colours
  * (0xRRGGBB as the firmware set them: dim, as the LEDs are), K1's volume (0..1023), the screen's state (a line) */
 WEB_EXPORT uint8_t *web_smk_leds(void) { return fm1_led; }
