@@ -114,11 +114,19 @@ it again. Use a **type A** 3.5 mm to MIDI adapter (the jack is listed as type A 
 measured); M-Vave's own adapter cable works.
 
 **With an FM-1 running LOOM-8** (the groovebox firmware): a 3.5 mm TRS cable from the SMK-37's jack into the FM-1's
-MIDI IN jack. LOOM-8's tracks listen on channels 1 to 8, so with the defaults the chord plays LOOM-8's track 1 and
-the bass its track 2 (set its track MIDI OUT as you like; LOOM-8 never echoes what comes in). Set Options > MIDI
-Clock `Out` here and LOOM-8's CLOCK to `receive` for its sequencer to follow ChoralRoot's tempo and loop
-transport, or leave the clock off and let LOOM-8 keep its own time. A note on channels 12 to 16 plays whichever
-LOOM-8 track is selected (Options > MIDI Perform `ch 12`, say, for a chord that follows LOOM-8's selection).
+MIDI IN jack. LOOM-8's tracks listen on channels 1 to 8, and a **new LOOM-8 project puts a drum kit on track 1**: a kit
+track takes only its eleven sounds (notes 1 to 11) and drops every other note, so a chord sent on channel 1 is neither
+heard nor recorded there. Either give track 1 a synth engine, or move ChoralRoot's streams in its Options: **MIDI
+Perform** to a synth track's channel (2 to 8; a new project has knit on 2 and 5, rayon on 3, jacquard on 4, bellows
+on 6, cane on 7, voile on 8) or to **12**, which plays and records on whichever track is selected on LOOM-8 (channels
+12 to 16 all mean the selected track); **MIDI Bass** likewise (another synth track's channel, or 12 as well). LOOM-8
+records a MIDI note exactly as its own keys: hold **REC** while playing (REC + PLAY keeps recording on), and the note
+lands on the track of its channel, not on the track on the screen unless the channel says so. A LOOM-8 step holds
+**four notes**: a chord of five or more keeps the first four sent (ChoralRoot sends low to high, so the top notes
+go); live, knit plays six voices and cane four. ChoralRoot's mod wheel (CC 1) moves the LOOM-8 track's LFO amount;
+CC 64 (sustain) and CC 11 (expression) do nothing there. Clock: set Options > MIDI Clock `Out` here and leave LOOM-8's
+CLOCK on `receive` (its default) for its sequencer to follow ChoralRoot's tempo, or set MIDI Clock `Off` here and
+LOOM-8 keeps its own time. LOOM-8 never echoes what comes in.
 
 Not tried on a unit: the UART setup is the stock firmware's as the porting guide read it (status: analysis), and
 Vector37 ships the same driver. [What to test](#what-to-test), item 15.

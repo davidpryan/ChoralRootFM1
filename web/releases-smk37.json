@@ -11,12 +11,13 @@
       "bullets": [
         "The keyboard's 3.5 mm jack is now a MIDI output. With Options > TRS MIDI Out On (the default) it carries what USB MIDI out carries, with or without a computer.",
         "On the jack: the chord on the MIDI Perform channel (1), the bass on MIDI Bass (2), the wheels, the pedal, and the MIDI clock with start and stop when MIDI Clock is Out.",
-        "An FM-1 running LOOM-8 on the other end of a TRS cable plays the chord on its track 1 and the bass on its track 2 (its tracks listen on channels 1 to 8). Set its CLOCK to receive to follow the keyboard's tempo.",
+        "An FM-1 running LOOM-8 plays channels 1 to 8 on its tracks 1 to 8, and 12 to 16 on the selected track. A new LOOM-8 project has a drum kit on track 1, which drops chord notes: set MIDI Perform to a synth track's channel (2 to 8) or to 12.",
         "Options > TRS MIDI Out Off leaves the jack quiet; USB MIDI keeps working either way. The option is kept across power-off with the global save.",
         "Everything else is ChoralRoot 0.29.2 on the SMK-37, as the 0.29-smk37 build: the same sounds, screens and controls, with your settings, sounds, loops and favourites stored as before."
       ],
       "notes": [
         "A fork of Quixotic7's ChoralRoot (the TRS output was asked for in its issue 38). Community-tested, not tested by the maintainer; the jack has not yet been tried on a unit by this fork either: the UART setup is the stock firmware's as genkigenki's porting guide read it, and the same driver ships in Vector37. If the option's line on the keyboard reads 'UART not answering', please report it.",
+        "Recording on LOOM-8: hold REC while you play (REC + PLAY keeps it on); a note lands on the track of its channel. A LOOM-8 step holds four notes, so a chord of five or more keeps its lowest four. CC 1 (the mod wheel) moves the track's LFO amount there; sustain and expression pedals do nothing on LOOM-8.",
         "Use a type A 3.5 mm to MIDI adapter for a DIN synth; a plain TRS cable reaches an FM-1's MIDI IN jack. SysEx (backups, the sound editors' dumps) stays on USB.",
         "Updating from 0.29-smk37 keeps your settings, sounds, loops and favourites; going back to it works too (it simply does not use the jack)."
       ],
