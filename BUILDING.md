@@ -343,6 +343,15 @@ A respin of the SMK build on the same FM-1 base adds `.N` after `-smk37` (`0.24-
 
 Once, before the first release: Settings → Pages → Build and deployment → Source: **GitHub Actions**.
 
+**A site of the SMK-37 build alone** (a fork of it, with no FM-1 release of its own): `python3 web/make_site.py
+--smk-only build/site-smk37` writes a small site whose front page (`web/smk37_landing.html`, filled with the newest
+version of `web/releases-smk37.json`) leads to the SMK-37 installer at `webapp/smk37/`, its packages at
+`firmware/smk37/` (from `build/release-smk37`, each checked against the list) and the SMK-37 browser emulator at
+`webapp/smk37/emu/` (`build/emu-web-smk37`, `CR_VERSION=X.Y sh tools/emu/web/build_web.sh`). The list's `repo` is the
+fork's: the installer's SMK37.md and source links follow it. The folder is a static site: serve it from GitHub Pages
+(Settings → Pages → Deploy from a branch, a `gh-pages` branch holding the folder; `.nojekyll` is written) or any
+static host over HTTPS (Web MIDI needs a secure page; `python3 -m http.server` on localhost works for a look).
+
 When CI cannot fetch the toolchain (pkgman.jieliapp.com): re-run the failed jobs once JieLi's server answers (the
 draft waits). Only if it stays down: build locally with `./build.sh --release X.Y`, upload every file of
 `build/release-X.Y/` to the draft `vX.Y` by hand (zip `LICENSES/` as `LICENSES.zip`), publish it, and run pages.yml

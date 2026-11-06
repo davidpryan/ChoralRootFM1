@@ -14,7 +14,8 @@ looper, the sound editor, MIDI and USB, updating and recovery, a quick-reference
 **M-Vave SMK-37:** a community test build (genkigenki's port; community-tested, not tested by the maintainer): see [SMK-37 instructions](SMK37.md).
 This fork adds **TRS MIDI OUT** to the SMK-37 build: the keyboard's 3.5 mm jack carries what USB MIDI out carries (chord on
 channel 1, bass on 2, the wheels and pedal, MIDI clock), so it drives a synth with no computer, an FM-1 running LOOM-8 among
-them (SMK37.md "TRS MIDI OUT"; Options > TRS MIDI Out).
+them (SMK37.md "TRS MIDI OUT"; Options > TRS MIDI Out). Its installer site: <https://davidpryan.github.io/ChoralRootFM1/>
+(`python3 web/make_site.py --smk-only build/site-smk37` builds it; BUILDING.md "A site of the SMK-37 build alone").
 
 ## Install
 

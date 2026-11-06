@@ -45,6 +45,15 @@
 
   web/make_site.py build/choralroot.fwsc VERSION OUT_DIR [EMU_DIR]     (or build/choralroot-X.Y.fwsc X.Y)
                    [--packages DIR] [--smk-packages DIR] [--require-all]
+  web/make_site.py --smk-only OUT_DIR [--smk-packages DIR] [--smk-emu DIR]   (a site of the SMK-37 build alone)
+
+--smk-only OUT_DIR: a site of the SMK-37 build alone, for a fork of it (no FM-1 package, no FM-1 installer):
+  index.html, site.css, the font     web/smk37_landing.html filled with the newest version of web/releases-smk37.json
+                                     ({{VERSION}} {{BASE}} {{DATE}} {{TITLE}} {{BULLETS}} {{NOTES}} {{FILES}} {{EMU}}
+                                     {{REPO}}: the list's repo, the fork's), its buttons to the pages below
+  webapp/smk37/, firmware/smk37/     as above (the installer at the same place, so its relative links hold)
+  webapp/smk37/emu/                  as above (--smk-emu DIR or SMK_EMU_DIR; missing: a warning)
+  firmware/LICENSE, LICENSING.md, LICENSES/, .nojekyll (GitHub Pages serves the folder as it is)
 
 The other versions: --packages DIR (or CR_PACKAGES_DIR; build/scratch/packages when it exists) holds their
 choralroot-X.Y.fwsc (and choralroot-X.Y-1core.fwsc where listed). A local build skips a version whose file is not there, with a "skipped:" line, and builds a
@@ -466,6 +475,73 @@ def smk_site(out, collected, emu=None):
 SMK_LIB = ("fm1pkg.js", "fm1ota.js", "fm1backup.js")
 
 
+def licences(fw):
+    """firmware/LICENSE, LICENSING.md and LICENSES/ (the packages hold JieLi SDK files, Apache-2.0: their licence travels
+    next to them, with Felucca's own); -> the texts' names"""
+    lic = HERE.parent / "LICENSES"
+    (fw / "LICENSES").mkdir(parents=True, exist_ok=True)
+    names = sorted(f.name for f in lic.glob("*.txt"))
+    for n in names:
+        shutil.copy(lic / n, fw / "LICENSES" / n)
+    (fw / "LICENSES" / "index.html").write_text(    # the pages link this folder: Pages lists no folders
+        '<!doctype html><meta charset="utf-8"><title>ChoralRoot FM-1 licences</title><h1>Licence texts</h1><ul>'
+        + "".join(f'<li><a href="{n}">{n}</a></li>' for n in names)
+        + '</ul><p><a href="../LICENSING.md">LICENSING.md</a> · <a href="../LICENSE">LICENSE (GPL-3.0)</a> · '
+          '<a href="../">the packages they cover, each with its source</a></p>\n',
+        encoding="utf-8")
+    for doc in ("LICENSE", "LICENSING.md"):
+        shutil.copy(HERE.parent / doc, fw / doc)
+    return names
+
+
+SMK_LANDING_EMU = ('<div class="try"><a class="btn b-green" href="webapp/smk37/emu/">Try it first</a>'
+                   '<p class="note">The same firmware in your browser, on the SMK-37\'s panel: the keys and pads with the mouse '
+                   'or the computer keyboard, Web MIDI out. No keyboard needed.</p></div>')
+
+
+def smk_only(out, smk_packages=None, emu=None, require_all=False):
+    """a site of the SMK-37 build alone (see the top): the landing page from web/smk37_landing.html, the installer and
+    the packages as smk_site writes them, the licences; -> the line to print"""
+    out = Path(out)
+    if smk_packages is None:
+        default = HERE.parent / "build" / "release-smk37"
+        smk_packages = os.environ.get("CR_SMK_PACKAGES_DIR") or (default if default.is_dir() else None)
+    smk_packages = Path(smk_packages) if smk_packages else None
+    emu = Path(emu or os.environ.get("SMK_EMU_DIR") or HERE.parent / "build" / "emu-web-smk37")
+    collected = smk_collect(smk_packages, require_all)
+    data, offered, _ = collected
+    if not offered:
+        raise SystemExit(f"--smk-only: no SMK-37 build to offer (every version of {SMK_RELEASES} needs its six packages: "
+                         "--smk-packages DIR, or build/release-smk37 from BOARD=smk37 ./build.sh --release X.Y-smk37)")
+    out.mkdir(parents=True, exist_ok=True)
+    names = licences(out / "firmware")
+    for n in ("InterTight.woff2", "OFL.txt", "site.css"):
+        shutil.copy(SITE / n, out / n)
+    (out / ".nojekyll").write_text("", encoding="utf-8")
+    smk_note = smk_site(out, collected, emu)
+    cur, files = offered[0]
+    esc = html_escape
+    text = (HERE / "smk37_landing.html").read_text(encoding="utf-8")
+    fills = {"VERSION": esc(cur["version"]), "BASE": esc(cur.get("base", "")), "DATE": esc(date_text(cur["date"])),
+             "TITLE": esc(cur.get("title", f"ChoralRoot {cur['version']}")),
+             "BULLETS": "\n      ".join(f"<li>{esc(b)}</li>" for b in cur.get("bullets", [])),
+             "NOTES": "\n      ".join(f"<li>{esc(b)}</li>" for b in cur.get("notes", [])),
+             "FILES": "\n      ".join(
+                 f'<li><b>{esc(SMK_MODELS[k][0])}</b>: <a href="firmware/smk37/{esc(smk_name(cur["version"], k))}" download>'
+                 f'{esc(smk_name(cur["version"], k))}</a> · {len(files[k]["std"][0])} bytes · {esc(files[k]["std"][2])}'
+                 f'<br><code>sha256 {esc(files[k]["std"][1])}</code></li>' for k in SMK_MODELS if k in files),
+             "EMU": SMK_LANDING_EMU if (out / "webapp" / "smk37" / "emu" / "index.html").is_file() else "",
+             "REPO": esc(data["repo"])}
+    for key, val in fills.items():
+        text = text.replace("{{" + key + "}}", val)
+    left = sorted(set(re.findall(r"\{\{[^}]*\}\}", text)))
+    if left:
+        raise SystemExit(f"{HERE / 'smk37_landing.html'}: unknown placeholder(s) {', '.join(left)}")
+    (out / "index.html").write_text(text, encoding="utf-8")
+    return (f"site (SMK-37 alone): {out}: index.html ({len(text)} B, {cur['version']}), site.css, InterTight.woff2, OFL.txt, "
+            f".nojekyll, firmware/LICENSE, LICENSING.md, LICENSES/ ({len(names)} texts + index.html); {smk_note}")
+
+
 def main(pkg, version, out, emu=None, packages=None, require_all=False, smk_packages=None):
     pkg, out = Path(pkg), Path(out)
     emu = Path(emu or os.environ.get("EMU_DIR") or HERE.parent / "build" / "emu-web")
@@ -527,19 +603,7 @@ def main(pkg, version, out, emu=None, packages=None, require_all=False, smk_pack
                                            + (f"{r['sha256_1core']}  {pkg_name_1core(r['version'])}\n" if r["version"] in one else "")
                                            for r, _ in offered), encoding="utf-8")
     (fw / "index.html").write_text(firmware_index(data, offered, product, one), encoding="utf-8")
-    lic = HERE.parent / "LICENSES"                  # the packages hold JieLi SDK files (Apache-2.0): their
-    (fw / "LICENSES").mkdir(exist_ok=True)          # licence travels next to them, with Felucca's own
-    names = sorted(f.name for f in lic.glob("*.txt"))
-    for n in names:
-        shutil.copy(lic / n, fw / "LICENSES" / n)
-    (fw / "LICENSES" / "index.html").write_text(    # the pages link this folder: Pages lists no folders
-        '<!doctype html><meta charset="utf-8"><title>ChoralRoot FM-1 licences</title><h1>Licence texts</h1><ul>'
-        + "".join(f'<li><a href="{n}">{n}</a></li>' for n in names)
-        + '</ul><p><a href="../LICENSING.md">LICENSING.md</a> · <a href="../LICENSE">LICENSE (GPL-3.0)</a> · '
-          '<a href="../">the packages they cover, each with its source</a></p>\n',
-        encoding="utf-8")
-    for doc in ("LICENSE", "LICENSING.md"):
-        shutil.copy(HERE.parent / doc, fw / doc)
+    names = licences(fw)
     site = landing(out, index)
     if (emu / "index.html").is_file():
         (out / "emu").mkdir(exist_ok=True)
@@ -578,9 +642,14 @@ def main(pkg, version, out, emu=None, packages=None, require_all=False, smk_pack
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("pkg", help="the current version's package (build/choralroot.fwsc, or the release's file)")
-    ap.add_argument("version", help="its version, e.g. 0.19")
-    ap.add_argument("out", help="the folder the site is written to")
+    ap.add_argument("pkg", nargs="?", help="the current version's package (build/choralroot.fwsc, or the release's file)")
+    ap.add_argument("version", nargs="?", help="its version, e.g. 0.19")
+    ap.add_argument("out", nargs="?", help="the folder the site is written to")
+    ap.add_argument("--smk-only", metavar="OUT_DIR", help="a site of the SMK-37 build alone (a fork's): the newest "
+                    "version of web/releases-smk37.json on web/smk37_landing.html, the SMK-37 installer, its packages; "
+                    "no FM-1 package needed")
+    ap.add_argument("--smk-emu", metavar="DIR", help="--smk-only: the SMK-37 browser emulator's folder (default: "
+                    "SMK_EMU_DIR, build/emu-web-smk37)")
     ap.add_argument("emu", nargs="?", help="the browser emulator's folder (default: EMU_DIR, build/emu-web)")
     ap.add_argument("--packages", metavar="DIR", help="the folder with the other versions' choralroot-X.Y.fwsc "
                     "(default: CR_PACKAGES_DIR, else build/scratch/packages when it exists)")
@@ -589,4 +658,9 @@ if __name__ == "__main__":
     ap.add_argument("--require-all", action="store_true", help="stop when a version of web/releases.json has no "
                     "package, or the current version is not its newest (the Pages job)")
     a = ap.parse_args()
-    main(a.pkg, a.version, a.out, a.emu, a.packages, a.require_all, a.smk_packages)
+    if a.smk_only:
+        print(smk_only(a.smk_only, a.smk_packages, a.smk_emu, a.require_all))
+    elif not (a.pkg and a.version and a.out):
+        ap.error("pkg, version and out are needed (or --smk-only OUT_DIR)")
+    else:
+        main(a.pkg, a.version, a.out, a.emu, a.packages, a.require_all, a.smk_packages)

@@ -1,7 +1,40 @@
 {
   "about": "The SMK-37 test builds the SMK-37 test installer (webapp/smk37/, not linked from the site) offers, newest first. Each version lists its three models' packages (choralroot-X.Y-smk37[-elite|-mke][-1core].fwsc, tools/build.py BOARD=smk37 --release X.Y-smk37) with their sha256, from the release's SHA256SUMS: web/make_site.py refuses a package that does not match, and the page checks it again in the browser before any write. The FM-1's list is web/releases.json; this one never goes there. Adding a version: BUILDING.md, 'An SMK-37 test release'. tests/releases_test.py checks this file.",
-  "repo": "https://github.com/Quixotic7/ChoralRootFM1",
+  "repo": "https://github.com/davidpryan/ChoralRootFM1",
   "releases": [
+    {
+      "version": "0.29.2-trs-smk37",
+      "base": "0.29.2",
+      "date": "2026-11-05",
+      "tag": "v0.29.2-trs-smk37",
+      "title": "TRS MIDI OUT: the 3.5 mm jack plays an FM-1 on LOOM-8, or any synth",
+      "bullets": [
+        "The keyboard's 3.5 mm jack is now a MIDI output. With Options > TRS MIDI Out On (the default) it carries what USB MIDI out carries, with or without a computer.",
+        "On the jack: the chord on the MIDI Perform channel (1), the bass on MIDI Bass (2), the wheels, the pedal, and the MIDI clock with start and stop when MIDI Clock is Out.",
+        "An FM-1 running LOOM-8 on the other end of a TRS cable plays the chord on its track 1 and the bass on its track 2 (its tracks listen on channels 1 to 8). Set its CLOCK to receive to follow the keyboard's tempo.",
+        "Options > TRS MIDI Out Off leaves the jack quiet; USB MIDI keeps working either way. The option is kept across power-off with the global save.",
+        "Everything else is ChoralRoot 0.29.2 on the SMK-37, as the 0.29-smk37 build: the same sounds, screens and controls, with your settings, sounds, loops and favourites stored as before."
+      ],
+      "notes": [
+        "A fork of Quixotic7's ChoralRoot (the TRS output was asked for in its issue 38). Community-tested, not tested by the maintainer; the jack has not yet been tried on a unit by this fork either: the UART setup is the stock firmware's as genkigenki's porting guide read it, and the same driver ships in Vector37. If the option's line on the keyboard reads 'UART not answering', please report it.",
+        "Use a type A 3.5 mm to MIDI adapter for a DIN synth; a plain TRS cable reaches an FM-1's MIDI IN jack. SysEx (backups, the sound editors' dumps) stays on USB.",
+        "Updating from 0.29-smk37 keeps your settings, sounds, loops and favourites; going back to it works too (it simply does not use the jack)."
+      ],
+      "packages": {
+        "pro": {
+          "sha256": "ee9c9875208a70558653f81358db1abb124b58cd54606d89771125c60f224478",
+          "sha256_1core": "facf8ac7733f14b616f687eea70c982d4dcc76dce17d59f832b79e3b5a4715c3"
+        },
+        "elite": {
+          "sha256": "576d6897c33ed8b07b4170097859c1b9afd5f1d3450bdc29ef5d0edc99d0bd78",
+          "sha256_1core": "6e265c0633caba1b0ca11e71a274947a373c348b8ef31a0143e765ace281ba80"
+        },
+        "mke": {
+          "sha256": "404b0aec4db8edd505f00574e2a6c797b0fa47a9a2647e11c07b66a503f9cfce",
+          "sha256_1core": "79b5f421d246e390e04e7141a91a3ec82081e9a8ed5038b120338b1a98b1e03c"
+        }
+      }
+    },
     {
       "version": "0.29-smk37",
       "base": "0.29",
@@ -11,7 +44,7 @@
       "bullets": [
         "FM TONE gets the Digitone II's filter types: MULTI (with Morph), COMB+, COMB- and EQ. In the sound editor's filter pages, hold SCALE (the FM-1's SEL) to pick one; the FILTER screen's third knob follows the type.",
         "DRIVE before the filter, the AHD amp envelope and CRUSH (bit and sample-rate reduction) for FM TONE.",
-          "FM TONE's chord voices share the two cores, so the heavier sounds play without clicks.",
+        "FM TONE's chord voices share the two cores, so the heavier sounds play without clicks.",
         "Everything of 0.27-smk37.1: the pedal jack (Sustain or Expression), K1's volume shown and remembered, the FX routing."
       ],
       "notes": [

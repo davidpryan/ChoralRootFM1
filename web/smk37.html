@@ -129,7 +129,7 @@
     <p class="small" data-t="licence"></p>
     <p class="small"><a href="../../firmware/LICENSE">LICENSE</a> · <a href="../../firmware/LICENSING.md">LICENSING.md</a> ·
       <a href="../../firmware/LICENSES/">LICENSES/</a> · <a href="../../firmware/smk37/SHA256SUMS">SHA256SUMS</a> ·
-      <a href="https://github.com/Quixotic7/ChoralRootFM1">source</a> ·
+      <a id="src" href="https://github.com/Quixotic7/ChoralRootFM1">source</a> ·
       <a href="https://github.com/genkigenki/fm1-to-smk37">fm1-to-smk37</a></p>
   </section>
 </main>
@@ -204,6 +204,10 @@ const log = (s) => { $("log").textContent += s + "\n"; };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const coded = (code, detail = "") => Object.assign(new Error(code + (detail ? ": " + detail : "")), { code, detail });
 for (const el of document.querySelectorAll("[data-t]")) el.textContent = t(el.dataset.t);
+if (meta.repo) {                                   // (a fork's site: its SMK37.md, its source)
+  $("doc").href = meta.repo + "/blob/main/SMK37.md";
+  $("src").href = meta.repo;
+}
 
 // the keyboard's model name -> the package: the three model names have their own; every other name of the SMK-37
 // (the Starrykey 37 Play, the bare SMK-37 of other firmwares) takes the Pro's, written with the same-keyboard rule
