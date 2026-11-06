@@ -132,8 +132,15 @@ static int midi_enqueue(uint32_t pkt, uint32_t source)
     return 1;
 }
 
+#if BOARD_SMK37 && !defined(FELUCCA_LOADER)
+static void smo_put(uint32_t pkt);                  /* smk_midi_out.h, included after this file */
+#endif
 static void midi_out_event(uint32_t pkt)            /* from the audio ISR */
 {
+#if BOARD_SMK37 && !defined(FELUCCA_LOADER)         /* SMK-37: the TRS jack too, with or without a computer (the
+                                                     * update loader: no TRS) */
+    smo_put(pkt);
+#endif
     if (usb.config && mo_w - mo_r < MQ) {
         midi_out_q[mo_w % MQ] = pkt;
         RING_PUBLISH();

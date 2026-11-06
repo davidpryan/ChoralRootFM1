@@ -19,6 +19,27 @@ static inline uint32_t fm1__lock(void) { fm1_irq_off(); return 0; }
 static inline void fm1__unlock(uint32_t v) { (void)v; fm1_irq_on(); }
 #include "../../firmware/hal/fm1_flash_map.h"         /* (storage.c's SMK windows) */
 #include "../../firmware/hal/smk_input.h"
+/* the TRS jack (firmware/src/smk_midi_out.h) on a modelled UART: a byte takes 3 of the 10 kHz ticks (0.32 ms on the
+ * line), what went out waits in emu_trs for the page (emu_web.c web_smk_trs_take) */
+static uint8_t emu_trs[1024];
+static volatile uint32_t emu_trs_w, emu_trs_r, emu_trs_busy;
+static uint32_t emu_trs_done(void) { return emu_trs_busy == 0u; }
+static void emu_trs_put(uint32_t b)
+{
+    if (emu_trs_w - emu_trs_r < sizeof emu_trs)
+        emu_trs[emu_trs_w++ % sizeof emu_trs] = (uint8_t)b;
+    emu_trs_busy = 3u;
+}
+#define SMO_TX_INIT() ((void)0)
+#define SMO_TX_DONE() emu_trs_done()
+#define SMO_TX_PUT(b) emu_trs_put(b)
+#include "../../firmware/src/smk_midi_out.h"
+static void emu_trs_tick(void)                     /* ten a ms, as TIMER5's (emu_fw.c emu_fw_tick) */
+{
+    if (emu_trs_busy)
+        emu_trs_busy--;
+    smo_tick();
+}
 #define KN_QUICK() (emu_hal.knob_quick)
 static int emu_pump_begin(void)
 {
@@ -75,6 +96,7 @@ static void emu_smk_init(void)                     /* fm1_input_init's RAM side 
         fm1_in.wheel[i] = emu_smk.wheel_raw[i];
     emu_smk.pedal_raw = 985;                           /* the guide's unit with the jack empty */
     fm1_in.pedal = emu_smk.pedal_raw;
+    smo_init();                                        /* (the TRS jack: nothing to set up here) */
     emu_smk.ready = 1;
 }
 

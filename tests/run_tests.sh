@@ -178,6 +178,8 @@ run "keys and buttons: fast press, long release, bouncy contacts (one note each)
 
 par_build $CC -o "$OUT/midi_uart_test" tests/midi_uart_test.c
 run "TRS MIDI parser" "$OUT/midi_uart_test"
+par_build $CC -o "$OUT/smk_midi_out_test" tests/smk_midi_out_test.c
+run "SMK-37 TRS MIDI OUT: packets to bytes, the ring, the pace, Off, a UART that never answers" "$OUT/smk_midi_out_test"
 
 par_build $CC -std=gnu11 -o "$OUT/rt_cr_usbaudio_test" tests/cr_usbaudio_test.c
 run "USB audio: descriptors, routing, packing, clock drift and recovery" "$OUT/rt_cr_usbaudio_test"

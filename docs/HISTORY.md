@@ -6963,3 +6963,23 @@ Clock Out steady, 116.05 BPM at a tempo of 116 (+447 ppm against the Mac, no los
 `SHA256SUMS`): XIP 557,640 of 573,440 (97.2 %), 1-core 554,500. `web/releases.json` first with the sha256s, 0.29.1's
 entry given its going-back note, `docs/releases/0.29.2.md`, MANUAL.md's first line. `python3 tests/releases_test.py`,
 `CR_VERSION=0.29.2 sh tests/run_all.sh`. Tagged v0.29.2: release.yml builds, signs and publishes, pages.yml the site.
+
+## 2026-11-05 (the SMK-37's TRS MIDI OUT, a fork)
+
+3y226. **TRS MIDI OUT on the SMK-37 (issue 38), so the keyboard drives an FM-1 on LOOM-8 with no computer.** A fork
+(not the maintainer's tree). The SMK-37's 3.5 mm jack is a MIDI output on UART1's transmit line, PC7 (the stock v016
+setup as the porting guide read it: fm1-to-smk37 docs/01-hardware.md section 9, status analysis); the build had left it
+unused. The driver is Vector37's (genkigenki, GPL-3.0), taken as it is: `hal/smk_uart_tx.h` (PLL48M, BAUD 383, TPND
+polled, no IRQ; PC7 is the FM-1's LCD chip select, never built for the FM-1) and `src/smk_midi_out.h` (a USB-MIDI packet
+to its MIDI bytes, whole messages or nothing into a 256-byte ring written by the audio ISR, one byte a TIMER5 tick when
+the UART has finished the last; a byte not finished in 3 ms is given up, four in a row and the jack goes quiet until
+the option is set again: no hang, no stall; SysEx and broken packets are not sent). `usb.c midi_out_event` hands every
+packet to `smo_put` first (BOARD_SMK37, not the loader): the CHORD and BASS streams on their channels, the raw chord,
+the wheels, the pedal, PANIC, the clock with start / stop under MIDI Clock Out, with or without a computer. `main.c`:
+`smo_init` before TIMER5, `smo_tick` after `fm1_input_tick` (nested in the render too). **Options > TRS MIDI Out**
+(`O_TRS`, after Pedal, SMK only: On the default, Off; its line names a UART that does not answer), kept in the session
+as `smk_trs` (byte 25, 0 = not stored = On; the reserve 118). The browser emulator models the UART (`emu_smk_hal.h`:
+3 ticks a byte, `web_smk_trs_take`, `web_smk_trs_mode`); `tests/smk_midi_out_test.c` (Vector37's, 24 checks) in
+`run_tests.sh`, `test_web_emu_smk.mjs` checks the jack's bytes against USB's and Off. LOOM-8's tracks listen on
+channels 1 to 8: the chord on its track 1, the bass on its track 2, its CLOCK `receive` under MIDI Clock Out.
+SMK37.md "TRS MIDI OUT" and "What to test" 15, SETTINGS.md, README. Not tried on a unit.

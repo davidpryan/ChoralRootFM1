@@ -401,7 +401,10 @@ typedef struct {
     uint8_t smk_pedal;                  /* the SMK-37's only: Options > Pedal, what its pedal jack does: 0 Sustain (the
                                          * default: an older record, a record of the FM-1 build), 1 Expression. The
                                          * FM-1 build neither writes nor reads it. Byte 24 (the old reserve's third) */
-    uint8_t rsv[43];
+    uint8_t smk_trs;                    /* the SMK-37's only: Options > TRS MIDI Out: 0 not stored (an older record, a
+                                         * record of the FM-1 build: On), 1 Off, 2 On. The FM-1 build neither writes
+                                         * nor reads it. Byte 25 (the old reserve's fourth) */
+    uint8_t rsv[42];
     css_fx_t fx;                        /* (rsv_fx[4] after it until the routing (issue 21): its entry took it) */
     css_part_t part[2];                 /* chord, bass */
     uint8_t rsv_end[60];

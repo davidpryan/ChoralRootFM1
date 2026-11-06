@@ -288,6 +288,11 @@ void emu_fw_tick(uint32_t ms)
     if ((int32_t)(ms - fm1_ms) > 0)
         fm1_ms = ms;
     emu_smk_tick(ms);
+    {
+        uint32_t i;
+        for (i = 0; i < 10u; i++)                 /* the TRS jack: TIMER5's ten ticks a ms (emu_smk_hal.h) */
+            emu_trs_tick();
+    }
     fm1_irq_on();
     return;
 #endif

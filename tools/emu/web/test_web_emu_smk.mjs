@@ -210,6 +210,52 @@ console.log("the pedal jack: Sustain holds a released key's note until it comes 
   ok(back[back.length - 1] === 127 && exOff(0) === 0 && exOff(1) === 0, `back to Sustain: CC 11 127, ex_off 0 (${back.join(",")})`);
 }
 
+console.log("the TRS jack: USB MIDI out's bytes on it, whole messages; Options > TRS MIDI Out Off: quiet");
+{
+  const d = await load(), ex = d.ex;
+  const trs = () => { const b = []; for (let v; (v = ex.web_smk_trs_take()) >= 0; ) b.push(v); return b; };
+  const bytesOf = (pkts) => pkts.flatMap((p) => {       // a USB-MIDI packet's MIDI bytes, as smk_midi_out.h sends them
+    const cin = p & 15, st = (p >>> 8) & 255;
+    if (cin === 15) return [st];
+    if (cin >= 8 && cin <= 14) return cin === 12 || cin === 13 ? [st, (p >>> 16) & 127] : [st, (p >>> 16) & 127, (p >>> 24) & 127];
+    return [];
+  });
+  const voice = (b) => b.filter((x) => x < 0xf8);       // (the clock runs on both: a realtime byte may be in flight)
+  ex.web_boot();
+  d.render(ms(3000));                         // (past the splash)
+  d.midi(); trs();
+  d.render(ms(100)); d.midi(); trs();         // (the jack lags USB by a few ms: drained once it has caught up)
+  ex.web_smk_key(19, 100);                    // G4: a chord's note-ons on channel 1
+  d.render(ms(300));
+  ex.web_smk_key(19, 0);
+  d.render(ms(600));                          // (the jack: ~3 bytes a ms; a chord's note-offs well within)
+  const usb = d.midi();
+  d.render(ms(100));
+  const jack = voice(trs()), want = voice(bytesOf(usb));
+  ok(noteOns(usb).length > 0, `USB MIDI out: ${noteOns(usb).length} note-ons for G4`);
+  ok(jack.length === want.length && jack.every((b, i) => b === want[i]),
+     `the jack: the same ${want.length} voice bytes, whole messages in order (got ${jack.length})`);
+  ok(jack.some((b, i) => b === 0x90 && (jack[i + 2] & 127) > 0), "a note-on on channel 1 (0x90) among them");
+  ex.web_smk_trs_mode(0);                     // Options > TRS MIDI Out: Off (what was queued before drains)
+  d.render(ms(100)); d.midi(); trs();
+  ex.web_smk_key(21, 100);
+  d.render(ms(300));
+  ex.web_smk_key(21, 0);
+  d.render(ms(600));
+  const usb2 = d.midi(), jack2 = trs();
+  ok(noteOns(usb2).length > 0 && jack2.length === 0, `Off: USB still sends (${noteOns(usb2).length} note-ons), the jack nothing (${jack2.length})`);
+  ex.web_smk_trs_mode(1);                     // On again
+  d.render(ms(100)); d.midi(); trs();
+  ex.web_smk_key(23, 100);
+  d.render(ms(300));
+  ex.web_smk_key(23, 0);
+  d.render(ms(600));
+  const usb3 = d.midi();
+  d.render(ms(100));
+  const jack3 = voice(trs()), want3 = voice(bytesOf(usb3));
+  ok(jack3.length > 0 && jack3.length === want3.length, `On again: the jack sends (${jack3.length} voice bytes, USB ${want3.length})`);
+}
+
 if (!args.has("--no-page")) {
   console.log("the page (headless Chromium screenshot)");
   const chrome = "/Applications/Chromium.app/Contents/MacOS/Chromium";

@@ -39,8 +39,9 @@
 #endif
 #ifndef FELUCCA_UART
 #if BOARD_SMK37
-#define FELUCCA_UART 0           /* SMK-37: the TRS jack is a MIDI OUT (UART1 TX, PC7), there is no MIDI IN; PH8 is a
-                                  * key-matrix row there and must never become UART RX */
+#define FELUCCA_UART 0           /* SMK-37: the TRS jack is a MIDI OUT (UART1 TX, PC7: hal/smk_uart_tx.h, fed by
+                                  * smk_midi_out.h), there is no MIDI IN; PH8 is a key-matrix row there and must
+                                  * never become UART RX */
 #else
 #define FELUCCA_UART 1           /* TRS MIDI IN on UART1 / PH8 */
 #endif
@@ -169,6 +170,7 @@
 #include "fm1_guard.h"
 #if BOARD_SMK37
 #include "smk_input.h"           /* SMK-37: keys, buttons, encoders, LEDs, pads, faders, wheels, battery */
+#include "smk_uart_tx.h"         /* SMK-37: the TRS jack, UART1 TX on PC7 (smk_midi_out.h below feeds it) */
 #else
 /* the key sensing's hooks into the scan (cr_sense.c, below): velocity from the analog rows (docs/VELOCITY.md) */
 static void cr_sense_hook(uint32_t col, uint32_t rowbit, uint32_t v, uint32_t driven);
@@ -213,6 +215,9 @@ static void cr_sense_probe_hook(uint32_t col, uint32_t v, uint32_t pressed);
 
 /* ------------------------------------------------------------ MIDI --- */
 #include "usb.c"
+#if BOARD_SMK37
+#include "smk_midi_out.h"        /* SMK-37: TRS MIDI OUT, USB MIDI out's stream on the jack (usb.c midi_out_event) */
+#endif
 #if FELUCCA_UART
 #include "midi_uart.c"
 #endif

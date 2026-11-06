@@ -170,6 +170,17 @@ WEB_EXPORT uint32_t web_smk_part(uint32_t p)
     return g | (uint32_t)trk[p].ex_off << 8;
 }
 WEB_EXPORT void web_smk_pedal_mode(uint32_t v) { opt_set(O_PEDAL, (int32_t)v); }   /* Options > Pedal: 0 Sustain, 1 Expression */
+/* the TRS jack (smk_midi_out.h on emu_smk_hal.h's UART): the next byte it sent, -1 for none; Options > TRS MIDI Out */
+WEB_EXPORT int32_t web_smk_trs_take(void)
+{
+    int32_t b = -1;
+    fm1_irq_off();
+    if (emu_trs_r != emu_trs_w)
+        b = emu_trs[emu_trs_r++ % sizeof emu_trs];
+    fm1_irq_on();
+    return b;
+}
+WEB_EXPORT void web_smk_trs_mode(uint32_t v) { opt_set(O_TRS, (int32_t)v); }       /* Options > TRS MIDI Out: 0 Off, 1 On */
 /* the lights: the 19 button LEDs (0 / 1, hal/smk_input.h's ids: SEQ PLAY's red half is 18), the 16 pads' colours
  * (0xRRGGBB as the firmware set them: dim, as the LEDs are), K1's volume (0..1023), the screen's state (a line) */
 WEB_EXPORT uint8_t *web_smk_leds(void) { return fm1_led; }

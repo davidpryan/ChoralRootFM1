@@ -617,6 +617,8 @@ static struct {
 #if BOARD_SMK37
     uint8_t smk_pedal;                    /* Options > Pedal: the pedal jack 0 Sustain, 1 Expression (the session's:
                                            * cr_settings.h smk_pedal; cr_smk_pedal) */
+    uint8_t smk_trs;                      /* Options > TRS MIDI Out: 1 On (the default), 0 Off (the session's:
+                                           * cr_settings.h smk_trs; smk_midi_out.h smo_on) */
 #endif
 } cs;
 
@@ -1202,6 +1204,7 @@ enum { O_STYLE, O_EXTADD, O_SECRET,
        O_SIXTH, O_VEL, O_TOUCH, O_VSENS, O_VCURVE, O_ATSENS,
 #if BOARD_SMK37
        O_PEDAL,                           /* the SMK-37's pedal jack (cr_smk_pedal): not in the FM-1's list */
+       O_TRS,                             /* the SMK-37's TRS jack, MIDI OUT (smk_midi_out.h): not in the FM-1's list */
 #endif
        O_BASSMODE, O_SINGLE, O_SPLIT, O_CH_MAIN, O_CH_BASS, O_CH_RAW, O_RAW_SOUND,
        O_CLOCK, O_VIEW, O_MOTION, O_NAMES, O_LEDS, O_HOLD, O_USB_IN, O_USB_LEVEL, O_USB_RATE, O_DUALCORE, O_OUTPUT,
@@ -1215,7 +1218,7 @@ static const char *const O_NAME[O_N] = {"Play Style", "Extension Addition", "Sec
     "Chord Keys", "SUS Window", "Full K Shorts", "MIDI Keys", "6th with 7th",
     "Velocity", "Key Touch", "Velocity Sens", "Velocity Curve", "Aftertouch Sens",
 #if BOARD_SMK37
-    "Pedal",
+    "Pedal", "TRS MIDI Out",
 #endif
     "Bass Behaviour", "Single Notes", "Split Point", "MIDI Perform", "MIDI Bass", "MIDI Raw Chord", "Raw Chord Sound",
     "MIDI Clock", "View", "Motion", "Chord Names", "LEDs", "Hold Time", "USB Record", "USB Level", "USB Rate", "Dual Core", "Output",
@@ -1223,7 +1226,7 @@ static const char *const O_NAME[O_N] = {"Play Style", "Extension Addition", "Sec
     "Calibrate", "Reset Settings", "Safe Mode", "Flash Data"};
 static const int16_t O_MAX[O_N] = {2, 1, 2, 1, 10, 1, 16, 1, 127, CU_TOUCH_MAX, 2, CU_VCURVE_MAX, CU_ATSENS_MAX,
 #if BOARD_SMK37
-                                   1,
+                                   1, 1,
 #endif
                                    3, 2, 11, 16, 16,
                                    16, 1, 2, V_N - 1, CR_MOTION_N - 1, 1, 1, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0};
@@ -1303,6 +1306,7 @@ static int32_t opt_get(uint32_t o)
     case O_ATSENS: return cs.at_sens;
 #if BOARD_SMK37
     case O_PEDAL: return cs.smk_pedal;
+    case O_TRS: return cs.smk_trs;
 #endif
     case O_BASSMODE: return cs.bass_mode;
     case O_SINGLE: return cs.single;
@@ -1352,6 +1356,7 @@ static void opt_set(uint32_t o, int32_t v)
 #if BOARD_SMK37
     case O_PEDAL: cs.smk_pedal = (uint8_t)v; break;   /* (cr_smk_pedal takes the change: a held sustain let go, the
                                                        * expression back to full, the rest learnt again) */
+    case O_TRS: cs.smk_trs = (uint8_t)v; smo_on((uint32_t)v); break;   /* (On tries a UART that went quiet again) */
 #endif
     case O_BASSMODE: cs.bass_mode = (uint8_t)v; cr_post(CRE_BASS_MODE, 0, 0, v); break;
     case O_SINGLE: cs.single = (uint8_t)v; cu_post_single(); break;
@@ -1456,6 +1461,7 @@ static void opt_text(uint32_t o, char *d, uint32_t n)
     case O_VCURVE: case O_ATSENS: cu_cpy(d, "FM-1 only", n); break;   /* (CU_VCURVE_MAX, CU_ATSENS_MAX) */
     case O_VSENS: cu_cpy(d, v == 2 ? "High" : v ? "Low" : "Mid", n); break;
     case O_PEDAL: cu_cpy(d, v ? "Expression" : "Sustain", n); break;
+    case O_TRS: cu_cpy(d, ONOFF[v & 1], n); break;
 #else
     case O_VSENS: case O_ATSENS: cu_cpy(d, v == 2 ? "High" : v ? "Low" : "Mid", n); break;
     case O_VCURVE: cu_int(d, v - 3, 1, n); break;
@@ -7708,6 +7714,9 @@ static void cu_options_screen(cr_screen_t *s)
 #if BOARD_SMK37
     else if (cu.opt_sel == O_PEDAL)                /* (SMK37.md "The pedal jack") */
         cu_cpy(s->label, cs.smk_pedal ? "the jack: CC 11, both parts" : "the jack: CC 64, both parts", sizeof s->label);
+    else if (cu.opt_sel == O_TRS)                  /* (SMK37.md "TRS MIDI OUT": what USB MIDI out sends, on the jack) */
+        cu_cpy(s->label, !cs.smk_trs ? "the jack: quiet" : smo.dead ? "the jack: UART not answering"
+                         : "the jack: what USB MIDI sends", sizeof s->label);
 #endif
     else if (cu.opt_sel == O_NAMES)                /* (docs/CHORD-NAMES.md: the same notes under either name) */
         cu_cpy(s->label, cs.names_std ? "A9 \267 Aadd9 \267 A9sus4" : "A7 9 \267 A9 \267 Asus m7 9", sizeof s->label);

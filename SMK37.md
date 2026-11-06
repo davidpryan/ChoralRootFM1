@@ -67,13 +67,15 @@ so the whole keybed plays roots. The SMK-37's buttons and knobs map onto the FM-
 | Faders 1..4 | the sends into Drive, Chorus, Delay and Reverb (the order of the FX layer's Sends page), shown as they move; a fader takes over only once it moves, also after FADER BANK |
 | Pitch wheel | bends the chord and the bass part (their channels' bend range: 2 semitones unless set over MIDI); also sent on the CHORD and BASS MIDI channels |
 | Mod wheel | vibrato on both parts (5.5 Hz, up to half a semitone at the top) and the sounds' mod wheel source; also sent as CC 1 |
+| TRS jack (3.5 mm) | MIDI OUT, Options > TRS MIDI Out `On` (the default): the same stream as USB MIDI out, the chord on the MIDI Perform channel (1), the bass on MIDI Bass (2), the wheels, the pedal, clock and start / stop with MIDI Clock `Out`; `Off`: the jack is quiet ([TRS MIDI OUT](#trs-midi-out)) |
 | Pedal jack | Options > Pedal: `Sustain` (the default), a switch pedal holds the notes of both parts, sent as CC 64; `Expression`, an expression pedal sets both parts' expression, sent as CC 11 ([The pedal jack](#the-pedal-jack)) |
 | Options > Key Touch | `Dynamic` (the SMK-37's default): every key as played, its two contacts through the unit's factory curve; `Fixed`: every key at Options > Velocity (1..127). Velocity Sens shapes how much the velocity changes the level, as on the FM-1 |
 | OCTAVE- held at power-on | update mode (OCTAVE-'s light flashes three times; install a package, or switch off and on) |
 | OCTAVE- + OCTAVE+ held at power-on | HARDWARE CALIBRATION (the screen asks for the FM-1's names, the table above) |
 | OCTAVE- + OCTAVE+ + PATCH held 5 s | update mode |
 
-The SMK-37's TRS jack is a MIDI output, and this build does not use it; there is no TRS MIDI IN. MIDI works over USB.
+The SMK-37's TRS jack is a MIDI output: this build sends what USB MIDI out sends on it too ([TRS MIDI OUT](#trs-midi-out)).
+There is no TRS MIDI IN; MIDI in works over USB.
 The SMK-37's button lights are on or off: the FM-1's dim glow of idle buttons does not show.
 
 ### The pedal jack
@@ -92,6 +94,34 @@ assuming it.
   BASS channels. Toe down (a lower reading, as the stock firmware reads the jack) is more. The range is learnt as you
   move the pedal: after plugging it in, sweep it once heel to toe. Nothing is sent until the pedal moves, so an empty
   jack leaves the parts at full expression; pulling the pedal out puts them back at full.
+
+### TRS MIDI OUT
+
+The SMK-37's 3.5 mm jack is a MIDI output (the FM-1's is an input), on UART1's transmit line, PC7, as the stock
+firmware drives it (the porting guide, `docs/01-hardware.md` section 9; the driver is Vector37's, `hal/smk_uart_tx.h`,
+`src/smk_midi_out.h`). With **Options > TRS MIDI Out** `On` (the default) every packet USB MIDI out carries goes out
+on the jack too, with or without a computer: the chord part's notes on the MIDI Perform channel (1 unless changed), the
+bass part's on MIDI Bass (2), the raw chord when Options > MIDI Raw Chord is on, the pitch and mod wheels (pitch bend,
+CC 1), the pedal (CC 64 or CC 11), PANIC's CC 123, and with Options > MIDI Clock `Out` the MIDI clock at the tempo
+with a start when the loop starts and a stop when it stops. SysEx (the backup, the sound editors' dumps) stays on
+USB. `Off`: nothing goes out on the jack. The option is kept in the session (the global save, SAVE held).
+
+Every message goes out whole (no running status), one byte at a time from the 10 kHz tick, never waiting on the
+UART: the line carries about 3,000 bytes a second, and a burst that outruns it (a dense chord with the bass and the
+clock) drops whole messages rather than stall. Should the UART not answer at all (four bytes in a row not sent within
+3 ms each), the jack goes quiet and the option's line reads `UART not answering`; set TRS MIDI Out `On` again to try
+it again. Use a **type A** 3.5 mm to MIDI adapter (the jack is listed as type A in a community spec sheet, not
+measured); M-Vave's own adapter cable works.
+
+**With an FM-1 running LOOM-8** (the groovebox firmware): a 3.5 mm TRS cable from the SMK-37's jack into the FM-1's
+MIDI IN jack. LOOM-8's tracks listen on channels 1 to 8, so with the defaults the chord plays LOOM-8's track 1 and
+the bass its track 2 (set its track MIDI OUT as you like; LOOM-8 never echoes what comes in). Set Options > MIDI
+Clock `Out` here and LOOM-8's CLOCK to `receive` for its sequencer to follow ChoralRoot's tempo and loop
+transport, or leave the clock off and let LOOM-8 keep its own time. A note on channels 12 to 16 plays whichever
+LOOM-8 track is selected (Options > MIDI Perform `ch 12`, say, for a chord that follows LOOM-8's selection).
+
+Not tried on a unit: the UART setup is the stock firmware's as the porting guide read it (status: analysis), and
+Vector37 ships the same driver. [What to test](#what-to-test), item 15.
 
 ### What the FM-1 has and the SMK-37 does not
 
@@ -301,6 +331,14 @@ What no test here can answer, in the order to try it. Note the model, the packag
     whether the hold opens the list, whether a tap of SCALE still goes to the next filter screen, and whether the
     filter picture names each type. Then play dense FM TONE chords with Dual Core On for a few minutes: any crash or
     click, say which sound.
+
+15. **TRS MIDI OUT.** A 3.5 mm to MIDI adapter (type A) from the jack into a MIDI monitor or a synth (an FM-1 on
+    LOOM-8: its MIDI IN jack, tracks 1 and 2). Play chords and the bass: the notes arrive on channels 1 and 2 with
+    the keys' velocity, the wheels as pitch bend and CC 1, the pedal as CC 64; with Options > MIDI Clock `Out`, the
+    clock and the loop's start / stop. Options > TRS MIDI Out `Off`: the jack falls silent at once; `On`: back. Say
+    whether the option's line ever reads `UART not answering` (then the UART setup is wrong for the unit), whether a
+    dense passage (chord + bass + clock) loses notes, and whether the stock firmware's adapter cable is the one that
+    works (type A).
 
 Also worth a line: whether `fm1_install.py --info` shows a unit ID (`unit ID: XXXXXXXX`) and whether two SMK-37s show
 different ones (it is read from the flash chip, whose maker differs from the FM-1's).
