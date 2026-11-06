@@ -1,0 +1,114 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- The landing page of a site that offers the SMK-37 build alone (web/make_site.py --smk-only: a fork's site, the
+     installer webapp/smk37/ at its heart). make_site.py fills 0.29.2-trs-smk37 0.29.2 5 November 2026 TRS MIDI OUT: the 3.5 mm jack plays an FM-1 on LOOM-8, or any synth <li>The keyboard&#x27;s 3.5 mm jack is now a MIDI output. With Options &gt; TRS MIDI Out On (the default) it carries what USB MIDI out carries, with or without a computer.</li>
+      <li>On the jack: the chord on the MIDI Perform channel (1), the bass on MIDI Bass (2), the wheels, the pedal, and the MIDI clock with start and stop when MIDI Clock is Out.</li>
+      <li>An FM-1 running LOOM-8 on the other end of a TRS cable plays the chord on its track 1 and the bass on its track 2 (its tracks listen on channels 1 to 8). Set its CLOCK to receive to follow the keyboard&#x27;s tempo.</li>
+      <li>Options &gt; TRS MIDI Out Off leaves the jack quiet; USB MIDI keeps working either way. The option is kept across power-off with the global save.</li>
+      <li>Everything else is ChoralRoot 0.29.2 on the SMK-37, as the 0.29-smk37 build: the same sounds, screens and controls, with your settings, sounds, loops and favourites stored as before.</li>
+     <li>A fork of Quixotic7&#x27;s ChoralRoot (the TRS output was asked for in its issue 38). Community-tested, not tested by the maintainer; the jack has not yet been tried on a unit by this fork either: the UART setup is the stock firmware&#x27;s as genkigenki&#x27;s porting guide read it, and the same driver ships in Vector37. If the option&#x27;s line on the keyboard reads &#x27;UART not answering&#x27;, please report it.</li>
+      <li>Use a type A 3.5 mm to MIDI adapter for a DIN synth; a plain TRS cable reaches an FM-1&#x27;s MIDI IN jack. SysEx (backups, the sound editors&#x27; dumps) stays on USB.</li>
+      <li>Updating from 0.29-smk37 keeps your settings, sounds, loops and favourites; going back to it works too (it simply does not use the jack).</li> <li><b>SMK-37 Pro</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37.fwsc" download>choralroot-0.29.2-trs-smk37.fwsc</a> · 651496 bytes · SMK-37 Pro_920<br><code>sha256 ee9c9875208a70558653f81358db1abb124b58cd54606d89771125c60f224478</code></li>
+      <li><b>SMK-37 Elite</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37-elite.fwsc" download>choralroot-0.29.2-trs-smk37-elite.fwsc</a> · 651500 bytes · SMK-37 Elite_920<br><code>sha256 576d6897c33ed8b07b4170097859c1b9afd5f1d3450bdc29ef5d0edc99d0bd78</code></li>
+      <li><b>MKE-P37</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37-mke.fwsc" download>choralroot-0.29.2-trs-smk37-mke.fwsc</a> · 651492 bytes · MKE-P37_920<br><code>sha256 404b0aec4db8edd505f00574e2a6c797b0fa47a9a2647e11c07b66a503f9cfce</code></li> <div class="try"><a class="btn b-green" href="webapp/smk37/emu/">Try it first</a><p class="note">The same firmware in your browser, on the SMK-37's panel: the keys and pads with the mouse or the computer keyboard, Web MIDI out. No keyboard needed.</p></div> https://github.com/davidpryan/ChoralRootFM1; no other templating. site.css and the font are upstream's landing page's. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChoralRoot for the SMK-37 · TRS MIDI OUT</title>
+<meta name="description" content="ChoralRoot, the chord instrument firmware, on the M-Vave SMK-37 keyboard, with its 3.5 mm jack as a MIDI output: it plays an FM-1 running LOOM-8, or any synth, with no computer. A community test build; install it from the browser.">
+<meta name="theme-color" content="#080808">
+<link rel="preload" href="InterTight.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<header class="title">
+  <div class="wrap">
+    <h1><span>ChoralRoot</span> <span>for the SMK-37</span></h1>
+    <p class="lede">Quixotic7's chord instrument on the M-Vave SMK-37, with the keyboard's 3.5 mm jack as a <b>MIDI output</b>: it plays an FM-1 running LOOM-8, or any synth, with no computer.</p>
+    <p class="ver">Version 0.29.2-trs-smk37 (5 November 2026): a fork of ChoralRoot 0.29.2. GPL-3.0. A community test build, not tested by ChoralRoot's maintainer.</p>
+  </div>
+  <div class="stripes" aria-hidden="true"><i class="s-red"></i><i class="s-orange"></i><i class="s-cream"></i></div>
+</header>
+
+<main>
+
+<section class="get" aria-labelledby="h-get">
+  <div class="wrap">
+    <h2 id="h-get">Get it</h2>
+    <div class="try">
+      <a class="btn b-red" href="webapp/smk37/">Install 0.29.2-trs-smk37</a>
+      <p class="note">From Chrome or Edge on a computer, over the USB cable: the installer picks your keyboard's model (SMK-37 Pro, Elite, MKE-P37 or Starrykey 37 Play), checks the package, backs a keyboard already on ChoralRoot up to a file, and finishes an interrupted install. Read what it says before you tick the box.</p>
+    </div>
+    <div class="try"><a class="btn b-green" href="webapp/smk37/emu/">Try it first</a><p class="note">The same firmware in your browser, on the SMK-37's panel: the keys and pads with the mouse or the computer keyboard, Web MIDI out. No keyboard needed.</p></div>
+    <div class="try">
+      <a class="btn b-cream" href="firmware/smk37/">Files</a>
+      <p class="note">The packages and their checksums, for the command line:<br><code class="cmd">python3 tools/fm1_install.py <span class="nw">choralroot-0.29.2-trs-smk37.fwsc</span></code></p>
+    </div>
+    <div class="try">
+      <a class="btn b-blue" href="https://github.com/davidpryan/ChoralRootFM1">Source</a>
+      <p class="note">This fork on GitHub, GPL-3.0; <a href="https://github.com/davidpryan/ChoralRootFM1/blob/main/SMK37.md">SMK37.md</a> has the controls, the TRS jack and what to test. ChoralRoot is <a href="https://github.com/Quixotic7/ChoralRootFM1">Quixotic7's</a>, the SMK-37 port and the jack's driver <a href="https://github.com/genkigenki/fm1-to-smk37">genkigenki's</a>, the base firmware Felucca by Hügelton Instruments.</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-new">
+  <div class="wrap">
+    <h2 id="h-new">TRS MIDI OUT: the 3.5 mm jack plays an FM-1 on LOOM-8, or any synth</h2>
+    <ul class="news">
+      <li>The keyboard&#x27;s 3.5 mm jack is now a MIDI output. With Options &gt; TRS MIDI Out On (the default) it carries what USB MIDI out carries, with or without a computer.</li>
+      <li>On the jack: the chord on the MIDI Perform channel (1), the bass on MIDI Bass (2), the wheels, the pedal, and the MIDI clock with start and stop when MIDI Clock is Out.</li>
+      <li>An FM-1 running LOOM-8 on the other end of a TRS cable plays the chord on its track 1 and the bass on its track 2 (its tracks listen on channels 1 to 8). Set its CLOCK to receive to follow the keyboard&#x27;s tempo.</li>
+      <li>Options &gt; TRS MIDI Out Off leaves the jack quiet; USB MIDI keeps working either way. The option is kept across power-off with the global save.</li>
+      <li>Everything else is ChoralRoot 0.29.2 on the SMK-37, as the 0.29-smk37 build: the same sounds, screens and controls, with your settings, sounds, loops and favourites stored as before.</li>
+    </ul>
+    <ul class="news">
+      <li>A fork of Quixotic7&#x27;s ChoralRoot (the TRS output was asked for in its issue 38). Community-tested, not tested by the maintainer; the jack has not yet been tried on a unit by this fork either: the UART setup is the stock firmware&#x27;s as genkigenki&#x27;s porting guide read it, and the same driver ships in Vector37. If the option&#x27;s line on the keyboard reads &#x27;UART not answering&#x27;, please report it.</li>
+      <li>Use a type A 3.5 mm to MIDI adapter for a DIN synth; a plain TRS cable reaches an FM-1&#x27;s MIDI IN jack. SysEx (backups, the sound editors&#x27; dumps) stays on USB.</li>
+      <li>Updating from 0.29-smk37 keeps your settings, sounds, loops and favourites; going back to it works too (it simply does not use the jack).</li>
+    </ul>
+  </div>
+</section>
+
+<section aria-labelledby="h-loom">
+  <div class="wrap">
+    <h2 id="h-loom">With an FM-1 running LOOM-8</h2>
+    <div class="cols">
+      <p>A 3.5 mm TRS cable from the SMK-37's jack into the FM-1's MIDI IN jack (or a type A adapter to a MIDI DIN cable for another synth). LOOM-8's tracks listen on MIDI channels 1 to 8: with the defaults the <b>chord plays track 1</b> (MIDI Perform, channel 1) and the <b>bass plays track 2</b> (MIDI Bass, channel 2). The wheels, the pedal and velocity go with the notes.</p>
+      <p>Tempo: set Options &gt; MIDI Clock to <b>Out</b> on the keyboard and LOOM-8's CLOCK to <b>receive</b>, and LOOM-8's sequencer follows ChoralRoot's tempo and the loop's start and stop. Or leave the clock off and let LOOM-8 keep its own time. Options &gt; TRS MIDI Out turns the jack off and on; USB MIDI keeps working beside it.</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-risk">
+  <div class="wrap">
+    <h2 id="h-risk">Before you install</h2>
+    <div class="warn">
+      <p>Have M-VAVE's stock package for your model and their updater, M-UPGRADE, at hand: that is the way back. Keep the USB cable connected until the keyboard has restarted. The jack's setup follows the stock firmware as the porting guide read it and has not been confirmed on a unit by this project: if the keyboard's Options &gt; TRS MIDI Out line reads <code>UART not answering</code>, please report it. Installing other firmware is at your own risk.</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-files">
+  <div class="wrap">
+    <h2 id="h-files">Packages</h2>
+    <ul class="news">
+      <li><b>SMK-37 Pro</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37.fwsc" download>choralroot-0.29.2-trs-smk37.fwsc</a> · 651496 bytes · SMK-37 Pro_920<br><code>sha256 ee9c9875208a70558653f81358db1abb124b58cd54606d89771125c60f224478</code></li>
+      <li><b>SMK-37 Elite</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37-elite.fwsc" download>choralroot-0.29.2-trs-smk37-elite.fwsc</a> · 651500 bytes · SMK-37 Elite_920<br><code>sha256 576d6897c33ed8b07b4170097859c1b9afd5f1d3450bdc29ef5d0edc99d0bd78</code></li>
+      <li><b>MKE-P37</b>: <a href="firmware/smk37/choralroot-0.29.2-trs-smk37-mke.fwsc" download>choralroot-0.29.2-trs-smk37-mke.fwsc</a> · 651492 bytes · MKE-P37_920<br><code>sha256 404b0aec4db8edd505f00574e2a6c797b0fa47a9a2647e11c07b66a503f9cfce</code></li>
+    </ul>
+    <p class="note">Each has a single-core twin (<code>-1core</code>) for a keyboard that crashes or freezes with the standard one. <a href="firmware/smk37/SHA256SUMS">SHA256SUMS</a> · <a href="firmware/LICENSE">LICENSE</a> · <a href="firmware/LICENSING.md">LICENSING.md</a> · <a href="firmware/LICENSES/">LICENSES/</a></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><b>ChoralRoot</b> by Quixotic7, after the Telepathic Orchid, on Felucca by Hügelton Instruments; the SMK-37 port and Vector37's TRS driver by M. Geisler (genkigenki). This fork adds the jack to the SMK-37 build. Free software, GPL-3.0; the packages carry three JieLi SDK files under Apache-2.0.</p>
+  </div>
+</footer>
+
+</body>
+</html>

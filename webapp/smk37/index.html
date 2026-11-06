@@ -1,0 +1,1301 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only
+     Copyright (C) 2026 ChoralRoot FM-1 contributors (a fork of Felucca)
+     SMK-37 port: Copyright (C) 2026 M. Geisler (genkigenki/makkuro) -->
+<!-- The SMK-37 test installer (SMK37.md): ChoralRoot's community test builds for the M-Vave SMK-37 Pro, SMK-37 Elite,
+     MKE-P37 and Starrykey 37 Play, around the update protocol of fm1ota.js. Not linked from the landing page or the
+     FM-1 installer: the link goes to testers who accept the risk. web/make_site.py writes it to webapp/smk37/index.html
+     and inlines the libraries at LIB and the metadata at META: the versions of web/releases-smk37.json, newest first,
+     each with its three models' packages (standard and single core) under ../../firmware/smk37/, their sha256 and
+     identities. Install picks the connected keyboard's model (a Starrykey 37 Play, or another name of the SMK-37: the
+     Pro's package), checks the package's sha256 and identity before any write, and refuses an FM-1, another SMK
+     firmware's updater and a firmware the installers do not install over. A keyboard already in ChoralRoot's update
+     mode (an interrupted install) is finished with its loader's model's package. EMU: make_site.py's link to the SMK-37
+     browser emulator beside it (webapp/smk37/emu/), when the site has it. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex, nofollow">
+<title>ChoralRoot SMK-37 · test installer</title>
+<style>
+  @font-face { font-family: "Inter Tight"; src: url(../../InterTight.woff2) format("woff2");
+               font-weight: 100 900; font-display: swap; }
+  :root { --ground: #080808; --cream: #F6F2EE; --red: #E63829; --orange: #F67918; --yellow: #F6B600;
+          --blue: #2950CD; --green: #29B27B; --grey: #6A696A; --dark: #313031; --dim: #9A999A; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { background: var(--ground); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body { margin: 0; background: var(--ground); color: var(--cream); overflow-x: hidden;
+         font: 400 17px/1.5 "Inter Tight", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; }
+  a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { color: var(--orange); }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid var(--cream); outline-offset: 3px; }
+  h1 { font-size: clamp(36px, 10vw, 56px); font-weight: 900; letter-spacing: -0.045em; line-height: .95; margin: 0; }
+  .sub { margin: 12px 0 0; font-size: 15px; font-weight: 600; color: var(--dim); }
+  .stripes { display: grid; gap: 5px; margin: 24px 0 28px; }
+  .stripes i { display: block; height: 10px; }
+  .stripes i:nth-child(1) { background: var(--red); }
+  .stripes i:nth-child(2) { background: var(--orange); }
+  .stripes i:nth-child(3) { background: var(--cream); }
+  p { margin: 0 0 16px; }
+  h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 14px; }
+  .risk { margin: 0 0 24px; padding: 16px 18px 4px; border-left: 6px solid var(--red); background: #1a0f0e; }
+  .risk ul { margin: 0 0 14px; padding-left: 20px; }
+  .risk li { margin: 0 0 6px; }
+  .accept { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 22px; font-weight: 700; cursor: pointer; }
+  .accept input { width: 20px; height: 20px; margin: 3px 0 0; accent-color: var(--red); flex: none; }
+  #rel { margin: 0 0 10px; font-size: 19px; font-weight: 600; }
+  #rel b { font-weight: 900; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+  .chip { font: inherit; border: 0; border-radius: 2px; cursor: pointer; padding: 8px 12px; background: var(--dark);
+          color: var(--cream); font-size: 15px; font-weight: 700; text-align: left; }
+  .chip[aria-pressed="true"] { background: var(--yellow); color: #080808; }
+  .chip:disabled { opacity: .3; cursor: default; }
+  #go { display: block; width: 100%; margin: 0; padding: 20px 24px; border: 0; border-radius: 2px; cursor: pointer;
+        background: var(--red); color: #fff; font: inherit; font-size: clamp(22px, 5.6vw, 26px); font-weight: 800;
+        letter-spacing: -0.02em; text-align: left; }
+  #go:disabled { opacity: .3; cursor: default; }
+  .check { display: flex; gap: 10px; align-items: baseline; margin: 14px 0 0; color: var(--dim); font-size: 14px; cursor: pointer; }
+  progress { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 8px; margin: 14px 0 0;
+             border: 0; background: var(--dark); color: var(--cream); }
+  progress::-webkit-progress-bar { background: var(--dark); }
+  progress::-webkit-progress-value { background: var(--cream); }
+  progress::-moz-progress-bar { background: var(--cream); }
+  #status { margin: 12px 0 0; min-height: 1.5em; font-size: 19px; font-weight: 700; overflow-wrap: anywhere; }
+  pre { color: var(--grey); font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        white-space: pre-wrap; margin: 12px 0 0; max-height: 240px; overflow: auto; }
+  pre:empty { display: none; }
+  .halt { margin: 16px 0 0; padding: 16px 18px 4px; background: var(--red); color: #fff; border-radius: 3px; font-size: 15px; }
+  .fin { margin: 16px 0 0; padding: 14px 18px; background: var(--green); color: #080808; border-radius: 3px; font-weight: 700; }
+  .fin p { margin: 0; }
+  section { margin-top: 48px; border-top: 3px solid var(--dark); padding-top: 20px; }
+  ul.news { margin: 0 0 14px; padding: 0; list-style: none; font-size: 15px; line-height: 1.4; }
+  ul.news li { position: relative; padding: 4px 0 4px 20px; }
+  ul.news li::before { content: ""; position: absolute; left: 0; top: 10px; width: 9px; height: 9px; background: var(--orange); }
+  .files { margin: 0; padding: 0; list-style: none; }
+  .files li { padding: 10px 0; border-top: 1px solid var(--dark); font-size: 15px; }
+  code { font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--dim); overflow-wrap: anywhere; }
+  .small { color: var(--dim); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>ChoralRoot<br>for the SMK-37</h1>
+  <p class="sub" data-t="sub"></p>
+  <div class="stripes"><i></i><i></i><i></i></div>
+
+  <div class="risk">
+    <h2 data-t="riskTitle"></h2>
+    <ul>
+      <li data-t="risk1"></li>
+      <li data-t="risk2"></li>
+      <li data-t="risk3"></li>
+      <li data-t="risk4"></li>
+      <li data-t="risk5"></li>
+    </ul>
+  </div>
+  <label class="accept"><input type="checkbox" id="accept"><span data-t="accept"></span></label>
+
+  <p class="small"><b><a href="emu/">Try it in the browser first</a></b>: the SMK-37 build in an emulator (the panel with the mouse or the computer keyboard; no keyboard needed).</p>
+  <p id="rel"></p>
+  <div class="row" id="versions"></div>
+  <div class="row" id="variants"></div>
+  <button id="go" disabled></button>
+  <label class="check"><input type="checkbox" id="skip-backup"><span data-t="skipBackup"></span></label>
+  <progress id="bar" max="100" value="0"></progress>
+  <p id="status"></p>
+  <div class="halt" id="interrupted" hidden><p data-t="interrupted"></p></div>
+  <div class="fin" id="done" hidden><p data-t="doneTitle"></p><p data-t="doneText"></p></div>
+  <pre id="log"></pre>
+
+  <section>
+    <h2 data-t="notesTitle"></h2>
+    <ul class="news" id="bullets"></ul>
+    <ul class="news" id="notes"></ul>
+    <p class="small"><a id="doc" href="https://github.com/Quixotic7/ChoralRootFM1/blob/main/SMK37.md" target="_blank" rel="noopener" data-t="docLink"></a></p>
+  </section>
+
+  <section>
+    <h2 data-t="backTitle"></h2>
+    <p data-t="backText"></p>
+  </section>
+
+  <section>
+    <h2 data-t="filesTitle"></h2>
+    <ul class="files" id="files"></ul>
+    <p class="small" data-t="licence"></p>
+    <p class="small"><a href="../../firmware/LICENSE">LICENSE</a> · <a href="../../firmware/LICENSING.md">LICENSING.md</a> ·
+      <a href="../../firmware/LICENSES/">LICENSES/</a> · <a href="../../firmware/smk37/SHA256SUMS">SHA256SUMS</a> ·
+      <a id="src" href="https://github.com/Quixotic7/ChoralRootFM1">source</a> ·
+      <a href="https://github.com/genkigenki/fm1-to-smk37">fm1-to-smk37</a></p>
+  </section>
+</main>
+<script type="module">
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
+//
+// FM-1 .fwsc packages in the browser: the package identity and the image the
+// device reads during an update.
+
+const BLOCKS = 20, BLK = 0x30, KEEP = 0x2F, MAX_BLOCKS = 64;   // BLOCKS: the identity blocks (more may follow)
+const STOCK_V15_SHA256 = "db1642b2b6fa5c2cccb11ffd13878068bb28601678d3644049f99dc40e7edb8a";
+const STOCK_APP_SIZE = 0x8DFBC;
+const STOCK_V15_SIZE = 699956;
+
+const T = new Uint16Array(256);
+for (let i = 0; i < 256; i++) {
+  let c = i << 8;
+  for (let k = 0; k < 8; k++) c = c & 0x8000 ? (c << 1) ^ 0x1021 : c << 1;
+  T[i] = c & 0xFFFF;
+}
+
+function crc16(d, crc = 0) {
+  for (let i = 0; i < d.length; i++) crc = ((crc << 8) & 0xFFFF) ^ T[((crc >> 8) ^ d[i]) & 0xFF];
+  return crc;
+}
+
+function enc(buf, off, size, key = 0xFFFF) {
+  for (let i = 0; i < size; i++) {
+    buf[off + i] ^= key & 0xFF;
+    key = ((key * 2) ^ (key & 0x8000 ? 0x1021 : 0)) & 0xFFFF;
+  }
+}
+
+function sfc(buf, off, size, base, key) {
+  for (let i = 0; i < size; i += 32) enc(buf, off + i, Math.min(size - i, 32), key ^ ((off + i - base) >> 2));
+}
+
+function chipkeyDecode(d) {
+  let sum = 0;
+  for (let i = 0; i < 16; i++) sum += d[i];
+  sum &= 0xFF;
+  sum = sum >= 0xE0 ? 0xAA : sum <= 0x10 ? 0x55 : sum;
+  let k = 0;
+  for (let i = 0; i < 16; i++) if ((d[16 + i] ^ d[15 - i]) < sum) k |= 1 << i;
+  return k;
+}
+
+const align32 = (v) => (v + 31) & ~31;
+const u16 = (b, o) => b[o] | (b[o + 1] << 8);
+const u32 = (b, o) => (b[o] | (b[o + 1] << 8) | (b[o + 2] << 16) | (b[o + 3] << 24)) >>> 0;
+function w16(b, o, v) { b[o] = v & 0xFF; b[o + 1] = (v >> 8) & 0xFF; }
+function w32(b, o, v) { w16(b, o, v & 0xFFFF); w16(b, o + 2, (v >>> 16) & 0xFFFF); }
+
+class Entry {                                   // JLFS head, 32 bytes
+  constructor(raw, off) {
+    this.hdrOff = off;
+    this.hcrc = u16(raw, off);
+    this.dcrc = u16(raw, off + 2);
+    this.offset = u32(raw, off + 4);
+    this.size = u32(raw, off + 8);
+    this.flags = raw[off + 12];
+    this.resvd = raw[off + 13];
+    this.index = u16(raw, off + 14);
+    this.rawName = raw.slice(off + 16, off + 32);
+    const z = this.rawName.indexOf(0);
+    this.name = String.fromCharCode(...this.rawName.slice(0, z < 0 ? 16 : z));
+    if (crc16(raw.subarray(off + 2, off + 32)) !== this.hcrc) throw new Error(`JLFS header CRC mismatch @${off.toString(16)}`);
+  }
+  packInto(buf) {
+    const o = this.hdrOff;
+    w16(buf, o + 2, this.dcrc); w32(buf, o + 4, this.offset); w32(buf, o + 8, this.size);
+    buf[o + 12] = this.flags; buf[o + 13] = this.resvd; w16(buf, o + 14, this.index);
+    buf.set(this.rawName, o + 16);
+    this.hcrc = crc16(buf.subarray(o + 2, o + 32));
+    w16(buf, o, this.hcrc);
+  }
+}
+
+class Package {
+  constructor(bytes) {
+    this.raw = new Uint8Array(bytes);
+    this.parseUfw();
+    this.flash = this.raw.slice(this.flashFileOff, this.flashFileOff + this.flashSize);
+    this.parseFlash();
+  }
+
+  get product() { return productOf(this.raw); }
+
+  setProduct(name) {
+    if (name.length > BLOCKS) throw new Error("product name too long");
+    for (let i = 0; i < BLOCKS; i++) {
+      const m = i < name.length ? (name.charCodeAt(i) + i + 1) & 0xFF : 0x7D;
+      if (i < name.length && m === 0x7D) throw new Error("product name encodes to the unused marker");
+      this.raw[i * BLK + KEEP] = m;
+    }
+  }
+
+  headerBytes() {
+    const h = new Uint8Array(BLOCKS * KEEP);
+    for (let i = 0; i < BLOCKS; i++) h.set(this.raw.subarray(i * BLK, i * BLK + KEEP), i * KEEP);
+    return h;
+  }
+
+  hdrFileOff(i) { return Math.floor(i / KEEP) * BLK + (i % KEEP); }
+
+  parseUfw() {
+    const h = this.headerBytes();
+    enc(h, 0, 0x40);
+    const hcrc = u16(h, 0), lcrc = u16(h, 2), nent = u16(h, 8);
+    if (crc16(h.subarray(2, 0x40)) !== hcrc) throw new Error("not an FM-1 .fwsc (UFW header CRC mismatch)");
+    this.skew = BLOCKS * BLK - h.length;
+    this.ufw = h;
+    this.nent = nent;
+    const hsize = 0x40 + nent * 0x50;
+    if (crc16(h.subarray(0x40, hsize)) !== lcrc) throw new Error("UFW entry list CRC mismatch");
+    this.entries = [];
+    for (let off = 0x40; off < hsize; off += 0x50) {
+      const e = h.slice(off, off + 0x50);
+      enc(e, 0, 0x50);
+      const z = e.subarray(0x40, 0x50).indexOf(0);
+      this.entries.push({ off, type: u16(e, 0), dcrc: u16(e, 4), dataOff: u32(e, 8), size: u32(e, 12),
+        name: String.fromCharCode(...e.subarray(0x40, z < 0 ? 0x50 : 0x40 + z)), plain: e });
+    }
+    const fl = this.entries.find((e) => e.type === 0);
+    if (!fl) throw new Error("no flash.bin in the package");
+    this.flashEntry = fl;
+    this.flashFileOff = fl.dataOff + this.skew;
+    this.flashSize = fl.size;
+    if (crc16(this.raw.subarray(this.flashFileOff, this.flashFileOff + fl.size)) !== fl.dcrc) throw new Error("flash.bin CRC mismatch");
+  }
+
+  parseFlash() {
+    const dec = this.flash.slice();
+    const h = dec.slice(0, 32);
+    enc(h, 0, 32);
+    if (crc16(h.subarray(2, 32)) !== u16(h, 0)) throw new Error("flash header CRC mismatch");
+    this.chipKey = null; this.appBase = null;
+    for (let off = 32; ; off += 32) {
+      enc(dec, off, 32);
+      const e = new Entry(dec, off);
+      if (e.name === "isd_config.ini") {
+        const blob = dec.subarray(e.offset, e.offset + 34);
+        if (crc16(blob.subarray(0, 32)) === u16(blob, 32)) this.chipKey = chipkeyDecode(blob.subarray(0, 32));
+      }
+      if (e.flags === 0x81 && e.name === "app_dir_head" && this.appBase === null) this.appBase = e.offset;
+      if (e.index) break;
+    }
+    if (this.chipKey === null || this.appBase === null) throw new Error("chip key or app_dir_head not found");
+    const b = this.appBase, k = this.chipKey, end = align32(b + 32);
+    sfc(dec, b, end - b, b, k);
+    const head = new Entry(dec, b);
+    const blkEnd = b + head.size;
+    if (blkEnd > end) sfc(dec, end, blkEnd - end, b, k);
+    this.sfcEnd = Math.max(end, blkEnd);
+    this.cfgLen = 0;
+    const probe = this.flash.slice(b, align32(blkEnd) + 32);
+    sfc(probe, 0, probe.length, 0, k);
+    try {
+      const cfg = new Entry(probe, blkEnd - b);
+      if (cfg.name === "cfg" && blkEnd + cfg.size <= this.flash.length) this.cfgLen = cfg.size;
+    } catch (_) { /* no cfg block */ }
+    if (this.cfgLen) {
+      const region = this.flash.slice(b, blkEnd + this.cfgLen);
+      sfc(region, 0, region.length, 0, k);
+      dec.set(region, b);
+      this.sfcEnd = blkEnd + this.cfgLen;
+    }
+    this.head = head;
+    this.app = null;
+    for (let off = b + 32; ; off += 32) {
+      const e = new Entry(dec, off);
+      if (e.flags === 0x82 && e.name === "app.bin") this.app = e;
+      if (e.index) break;
+    }
+    if (!this.app) throw new Error("app.bin not found in app area");
+    this.appOff = b + this.app.offset;
+    this.dec = dec;
+  }
+
+  // the new app, padded to the stock size (Felucca never changes the layout)
+  setApp(app) {
+    if (app.length > this.app.size) throw new Error(`app is ${app.length} B, the slot is ${this.app.size} B`);
+    const nw = new Uint8Array(this.app.size).fill(0xFF);
+    nw.set(app);
+    const a = this.app, h = this.head, b = this.appBase;
+    this.dec.set(nw, this.appOff);
+    a.dcrc = crc16(nw);
+    a.packInto(this.dec);
+    h.dcrc = crc16(this.dec.subarray(h.hdrOff + 32, h.hdrOff + h.size));
+    h.packInto(this.dec);
+    this.sfcEnd = Math.max(align32(b + 32), b + h.size + this.cfgLen);
+    const region = this.dec.slice(b, this.sfcEnd);
+    sfc(region, 0, region.length, 0, this.chipKey);
+    this.flash.set(region, b);
+  }
+
+  serialize() {
+    const out = this.raw.slice();
+    out.set(this.flash, this.flashFileOff);
+    const fl = this.flashEntry, e = fl.plain.slice();
+    w16(e, 4, crc16(this.flash));
+    enc(e, 0, 0x50);
+    const h = this.ufw.slice();
+    h.set(e, fl.off);
+    const hsize = 0x40 + this.nent * 0x50;
+    w16(h, 2, crc16(h.subarray(0x40, hsize)));
+    w16(h, 0, crc16(h.subarray(2, 0x40)));
+    enc(h, 0, 0x40);
+    for (let i = 0; i < hsize; i++) out[this.hdrFileOff(i)] = h[i];
+    return out;
+  }
+}
+
+const printable = (m, i) => { const c = (m - i - 1) & 0xFF; return c >= 0x20 && c < 0x7F; };
+
+// the identity blocks: 20, or more when the identity is longer (the Starrykey 37 Play V016's "STARRYKEY-37 PLAY_016"
+// takes 21): further identity markers count only when unused 0x7D markers follow them (the 36-block layout of the
+// stock SMK-37 packages)
+function identityBlocks(fwsc) {
+  let n = BLOCKS;
+  while (n < MAX_BLOCKS && (n + 1) * BLK <= fwsc.length && fwsc[n * BLK + KEEP] !== 0x7D && printable(fwsc[n * BLK + KEEP], n)) n++;
+  return n > BLOCKS && (n + 1) * BLK <= fwsc.length && fwsc[n * BLK + KEEP] === 0x7D ? n : BLOCKS;
+}
+
+// interleave blocks: the identity blocks, then more while the marker is the unused 0x7D (the stock SMK-37 packages
+// have 36)
+function blockCount(fwsc) {
+  let n = identityBlocks(fwsc);
+  while (n < MAX_BLOCKS && (n + 1) * BLK <= fwsc.length && fwsc[n * BLK + KEEP] === 0x7D) n++;
+  return n;
+}
+
+// the package identity ("FM-1_904", "SMK-37 Pro_016"): one marker byte after each identity block (0x7D: none); past
+// the first 20 only when the package really has those blocks (logicalImage's count)
+function productOf(fwsc) {
+  if (fwsc.length < BLOCKS * BLK) throw new Error("not an FM-1 package (too short)");
+  const ib = identityBlocks(fwsc), n = ib === BLOCKS ? BLOCKS : Math.min(ib, layout(fwsc).blocks);
+  let s = "";
+  for (let i = 0; i < n; i++) {
+    const m = fwsc[i * BLK + KEEP];
+    if (m !== 0x7D) s += String.fromCharCode((m - i - 1) & 0xFF);
+  }
+  return s;
+}
+
+function deinterleave(fwsc, blocks) {
+  const out = new Uint8Array(fwsc.length - blocks);
+  for (let i = 0; i < blocks; i++) out.set(fwsc.subarray(i * BLK, i * BLK + KEEP), i * KEEP);
+  out.set(fwsc.subarray(blocks * BLK), blocks * KEEP);
+  return out;
+}
+
+// the logical image's header and file list are intact and flash.bin (0) / ota.bin (100) match their CRCs (the stock
+// packer's other entries store a CRC of something else: their bounds only)
+function filesOk(img) {
+  if (img.length < 0x40) return false;
+  const h = img.slice(0, 0x40);
+  enc(h, 0, 0x40);
+  if (crc16(h.subarray(2, 0x40)) !== u16(h, 0)) return false;
+  const n = u16(h, 8);
+  if (n < 1 || n > 8 || img.length < 0x40 + 0x50 * n) return false;
+  for (let i = 0; i < n; i++) {
+    const e = img.slice(0x40 + i * 0x50, 0x90 + i * 0x50);
+    enc(e, 0, 0x50);
+    const type = u16(e, 0), off = u32(e, 8), size = u32(e, 12);
+    if (off + size > img.length) return false;
+    if ((type === 0 || type === 100) && crc16(img.subarray(off, off + size)) !== u16(e, 4)) return false;
+  }
+  return true;
+}
+
+// the image the device addresses during an update: the .fwsc without the marker bytes (20 blocks, or the detected
+// count when the files' CRCs agree: a 20-block package can have 0x7D after block 20 by chance)
+function layout(fwsc) {
+  const n = blockCount(fwsc);
+  if (n !== BLOCKS) {
+    const img = deinterleave(fwsc, n);
+    if (filesOk(img) || !filesOk(deinterleave(fwsc, BLOCKS))) return { blocks: n, image: img };
+  }
+  return { blocks: BLOCKS, image: deinterleave(fwsc, BLOCKS) };
+}
+function logicalImage(fwsc) { return layout(fwsc).image; }
+
+async function sha256hex(bytes) {
+  const d = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(d)].map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+
+// Only the user's unmodified official V15 is accepted for a return to stock.
+// The digest pins every file, loader and flash layout; filenames are not evidence.
+async function validateStockPackage(bytes) {
+  if (bytes.length !== STOCK_V15_SIZE || await sha256hex(bytes) !== STOCK_V15_SHA256)
+    throw new Error("Select the unmodified official FM-1 V15 file (FM-1.fwsc).");
+  const pkg = new Package(bytes);
+  if (pkg.product !== "FM-1_015" || pkg.flashFileOff !== 1044 || pkg.flashSize !== 602112 ||
+      pkg.appBase !== 16384 || pkg.appOff !== 16672 || pkg.app.size !== STOCK_APP_SIZE ||
+      !pkg.entries.some((e) => e.type === 100 && e.name === "ota.bin" && e.size === 19969))
+    throw new Error("The official firmware has an unsupported FM-1 layout.");
+  return { product: pkg.product, image: logicalImage(bytes), sha256: STOCK_V15_SHA256 };
+}
+
+// official V15 + Felucca app -> installable package (Uint8Array)
+async function buildFeluccaPackage(stockBytes, appBytes, product) {
+  const sha = await sha256hex(stockBytes);
+  if (sha !== STOCK_V15_SHA256) throw new Error("this is not the official FM-1 V15 firmware file (FM-1.fwsc)");
+  const pkg = new Package(stockBytes);
+  pkg.setApp(appBytes);
+  pkg.setProduct(product);
+  return pkg.serialize();
+}
+
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
+//
+// The FM-1 USB-MIDI update protocol over WebMIDI (after tools/fm1_install.py).
+// Step 1: the running firmware (official
+// or Felucca) reads parts of the package and stages the update loader. Step 2:
+// the loader reads the whole image and writes it. Both steps are "the device
+// asks, we answer": cmd 0x30 read requests on the logical image.
+
+const HS_QUERY = [0xF0, 0x00, 0x32, 0x45, 0x00, 0x00, 0x00, 0x40, 0x7F, 0xF7];
+const UPGRADE = [0xF0, 0x22, 0x24, 0x35, 0x7F, 0xF7];
+const MAXDATA = 512;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const IS_OTA = (id) => /^ota-/i.test(id.model);
+// the SMK-37 Pro, SMK-37 Elite, MKE-P37, Starrykey 37 Play and the SMK-37+VA mod: one keyboard under several model
+// names, so a package for one runs on all of them (also "SMK-37", the name other firmwares report); an FM-1 is
+// another device (SMK37.md)
+const SMK_FAMILY = /^(ota-)?(SMK-37([ +].*)?|MKE-P37|STARRYKEY-37.*)$/i;
+const sameKeyboard = (a, b) => a === b || (SMK_FAMILY.test(a) && SMK_FAMILY.test(b));   // two models
+// the update loader of SLOOP / Felucca packages ("ota-FM-1_9XX", "ota-SMK-37 Pro_9XX"; the SMK ports also under the
+// Elite's and the MKE-P37's model name, Makkuro37 _7XX). A device left in the update mode of another firmware (the
+// stock updater's loader) is never written: its loader may lay the image out differently. The bare "SMK-37" name
+// ("ota-SMK-37_931") is ChanceTheMaker's SMK firmwares' RAM updater: another package format, so not ours.
+const OUR_LOADER = (id) => /^ota-(FM-1|SMK-37 Pro|SMK-37 Elite|MKE-P37)_[789]\d\d$/i.test(id.text);
+// ChanceTheMaker's SMK firmwares (Felucca SMK, Sloop SMK, Melodee SMK, Doom): "SMK-37_9NN", their own updater
+const OTHER_SMK = (id) => /^(ota-)?SMK-37_9\d\d$/i.test(id.text);
+// the MIDI ports find() probes: the FM-1 / SMK-37 models' and the firmwares' names; other gear is never sent anything
+const PORT_RE = /fm-1|smk|elite|mke-p37|starry|felucca|sloop|clipper|melodee|fomni|x0x|makkuro|maku|rainbow|amb-1|choral|orbit|snoop|vector|vox|ota|composite|sinco|usb-midi/i;
+
+// errors carry a code the pages translate: notfound, model, stopped, noloader, lost, noreturn,
+// mismatch (detail: the identity the device reports), badreq, other (an SMK firmware with its own updater),
+// foreign (detail: the loader's identity)
+function fail(code, msg, detail = "") { const e = new Error(msg); e.code = code; e.detail = detail; return e; }
+
+function pack7(data) {
+  const out = []; let acc = 0, nb = 0;
+  for (const b of data) {
+    acc |= b << nb; nb += 8;
+    while (nb >= 7) { out.push(acc & 0x7F); acc >>>= 7; nb -= 7; }
+  }
+  if (nb) out.push(acc & 0x7F);
+  return out;
+}
+
+function unpack7(s) {
+  const out = []; let acc = 0, nb = 0;
+  for (const b of s) {
+    acc |= (b & 0x7F) << nb; nb += 7;
+    while (nb >= 8) { out.push(acc & 0xFF); acc >>>= 8; nb -= 8; }
+  }
+  return out;
+}
+
+function response(addr, data, fl = 0) {
+  const len = data.length;
+  const body = [0x00, 0x59, 0x30, (len + 8) & 0xFF, ((len + 8) >> 8) & 0xFF, 0, fl,
+    addr & 0xFF, (addr >>> 8) & 0xFF, (addr >>> 16) & 0xFF, (addr >>> 24) & 0xFF,
+    len & 0xFF, (len >> 8) & 0xFF, 0, ...data];
+  let s = 0;
+  for (let i = 6; i < body.length; i++) s += body[i];
+  body.push(~s & 0xFF);
+  return [0xF0, ...pack7(body), 0xF7];
+}
+
+function parseRequest(pkt) {
+  if (pkt[0] !== 0xF0 || pkt[pkt.length - 1] !== 0xF7) return null;
+  const u = unpack7(pkt.slice(1, -1));
+  if (u.length !== 15 || u[0] !== 0 || u[1] !== 0x59 || u[2] !== 0x30) return null;
+  let s = 0;
+  for (let i = 6; i < 14; i++) s += u[i];
+  if ((~s & 0xFF) !== u[14]) return null;
+  return { fl: u[6], addr: (u[7] | (u[8] << 8) | (u[9] << 16) | (u[10] << 24)) >>> 0, len: u[11] | (u[12] << 8) | (u[13] << 16) };
+}
+
+function parseIdentity(pkt) {
+  const d = unpack7(pkt.slice(1, -1));
+  if (d.length !== 34 || d[0] !== 0 || d[1] !== 0x59 || d[2] !== 0x11) return null;
+  const txt = String.fromCharCode(...d.slice(6, 33)).split("\0")[0];   // (some firmwares end the text early)
+  const m = /^([^_]+)_(\d+)$/.exec(txt);
+  return m ? { text: txt, model: m[1], version: parseInt(m[2], 10) } : null;
+}
+
+// ---- which firmware runs: may ChoralRoot be installed over it? (docs/INSTALL-COMPAT.md; tools/fm1_install.py
+// classify_firmware is the same table). identity: the handshake text ("FM-1_015", "FM-1_910"); info: the version the
+// backup protocol's INFO answers ("FELUCCA v1.0", "MELODEE v0.11.1", "ChoralRoot 0.12"), null when it does not answer.
+// -> { verdict: "allow" | "refuse" | "loader", kind, name }. The 9xx identities are shared by every Felucca-based
+// firmware (FM-1_9XY from the release number: Felucca 0.9-beta FM-1_909, Felucca 1.0 FM-1_910, Sloop 2.0 FM-1_920 =
+// ChoralRoot's), so they are told apart by the INFO text only.
+const RECOVERY_URL = "https://github.com/Quixotic7/MvaveFM1Unbricker";
+// port: the MIDI port's name, when known. Bubba Machine (github.com/Erbubar23/bubba-machine) answers FM-1_003, as an
+// old official firmware would; its USB product name "FM-1 Bubba Machine" tells it apart. Its updater takes only a
+// package with M-VAVE's own update loader, so it refuses ChoralRoot's (docs/INSTALL-COMPAT.md "Bubba Machine").
+const BUBBA_PORT = /bubba/i;
+// RemoteFM1 0.2 on (github.com/Quixotic7/RemoteFM1; on fm1-base + felucca-bsp, felucca-bsp's updater): fm1-base's
+// identity, its fm1.toml id_prefix "FM-1_52" + "00" (a development build) or + XXYYZZ (release X.Y.Z, two digits
+// each: 0.2.1 = FM-1_52000201). No INFO answer. RemoteFM1 0.1 answered as the official V15 (FM-1_015). Only
+// RemoteFM1's prefix: other fm1-base firmwares' update paths are not known here (docs/INSTALL-COMPAT.md "RemoteFM1")
+const REMOTEFM1_ID = /^52(?:00|(\d\d)(\d\d)(\d\d))$/;
+function classifyFirmware(identity, info, port) {
+  const m = /^(ota-)?([^_]+)_(\d+)$/i.exec(identity || "");
+  const v = (info || "").trim();
+  if (!m) return { verdict: "refuse", kind: "unknown", name: `an unknown firmware (${identity || "no identity"})` };
+  if (m[1]) return { verdict: "loader", kind: "loader", name: identity };            // update mode: resume
+  const num = parseInt(m[3], 10);
+  if (SMK_FAMILY.test(m[2])) return classifySmk(identity, m[2], num, v);   // the M-Vave SMK-37 (SMK37.md)
+  if (m[2] !== "FM-1") return { verdict: "refuse", kind: "unknown", name: identity };
+  if (BUBBA_PORT.test(port || "")) return { verdict: "refuse", kind: "bubba", name: `Bubba Machine (${identity})` };
+  const r = REMOTEFM1_ID.exec(m[3]);
+  if (r) return { verdict: "allow", kind: "remotefm1", name: r[1] ? `RemoteFM1 ${+r[1]}.${+r[2]}.${+r[3]}` : "RemoteFM1 (development build)" };
+  if (num >= 1 && num < 100) return { verdict: "allow", kind: "stock", name: `the official M-VAVE firmware (${identity})` };
+  if (num === 0) return { verdict: "refuse", kind: "sloop", name: "Sloop's rescue mode (FM-1_000)" };
+  if (num < 900) return { verdict: "refuse", kind: "unknown", name: `an unknown firmware (${identity})` };
+  if (/^choralroot\b/i.test(v)) return { verdict: "allow", kind: "choralroot", name: v };
+  if (/^melodee\b/i.test(v)) return { verdict: "allow", kind: "melodee", name: `Melodee (${v.slice(8)})` };
+  if (/sloop/i.test(v)) return { verdict: "refuse", kind: "sloop", name: "Sloop" };
+  const f = /^felucca\s+(v)?(\d+)\.(\d+)(\S*)$/i.exec(v);
+  // Felucca 1.0 and later: "v1.0", "v1.0.1", "v1.1-rc1" (build.py "v" + release); the 0.x betas: "0.9-BETA", "0.5 BETA"
+  if (f && parseInt(f[2], 10) >= 1 && !/beta/i.test(v) && (f[1] || !f[4]))
+    return { verdict: "allow", kind: "felucca", name: `Felucca ${f[1] || "v"}${f[2]}.${f[3]}${f[4]}` };
+  if (/^felucca\b/i.test(v)) return { verdict: "refuse", kind: "felucca-beta", name: `a Felucca beta or a firmware based on one (${v})` };
+  return { verdict: "refuse", kind: "unknown", name: v ? `an unknown firmware (${identity}, ${v})` : `an unknown Felucca-based firmware (${identity})` };
+}
+// an SMK-37 (any of its model names): the official firmware and the Felucca-family ports (SLOOP, Felucca and the ports
+// on their SMK board layer: its owner tag keeps each firmware's data apart) are installed over. The bare name
+// "SMK-37_9NN" is ChanceTheMaker's SMK firmwares': another package format and their own updater, so not ours
+function classifySmk(identity, model, num, v) {
+  if (model.toUpperCase() === "SMK-37" && num >= 900 && num < 1000)
+    return { verdict: "refuse", kind: "other", name: `a firmware with its own updater (${identity})` };
+  if (num >= 1 && num < 100) return { verdict: "allow", kind: "stock", name: `the official M-VAVE firmware (${identity})` };
+  if (/^choralroot\b/i.test(v)) return { verdict: "allow", kind: "choralroot", name: v };
+  if (num >= 700 && num < 1000) return { verdict: "allow", kind: "smk", name: `an SMK-37 port (${identity}${v ? ", " + v : ""})` };
+  return { verdict: "refuse", kind: "unknown", name: `an unknown firmware (${identity})` };
+}
+function refusalText(name) {
+  return `Installing over ${name} is not supported: ${REFUSE_REASON} ` +
+    `Return to the official V15 firmware with the installer you used for ${name} first, then install ChoralRoot. ` +
+    `If an FM-1 is already dark (black screen, a "WL82 UBOOT1.00" USB disk): ${RECOVERY_URL}`;
+}
+const REFUSE_REASON = "An install over it has left an FM-1 that no longer starts, and the data it leaves in the flash is not known to be safe for ChoralRoot.";
+
+// one MIDI in/out pair with a SysEx queue
+class Link {
+  constructor(input, output) {
+    this.input = input; this.output = output; this.q = []; this.waiter = null;
+    input.onmidimessage = (ev) => {
+      if (ev.data[0] !== 0xF0) return;
+      this.q.push(Array.from(ev.data));
+      if (this.waiter) { const w = this.waiter; this.waiter = null; w(); }
+    };
+  }
+  get lost() { return this.input.state === "disconnected" || this.output.state === "disconnected"; }
+  // false when the port is gone (unplugged): WebMIDI throws on a disconnected output
+  send(bytes) {
+    try { this.output.send(bytes); return true; } catch (_) { return false; }
+  }
+  drain() { this.q.length = 0; }
+  async read(ms) {
+    if (!this.q.length) {
+      let tm;
+      await Promise.race([new Promise((r) => { this.waiter = r; }), new Promise((r) => { tm = setTimeout(r, ms); })]);
+      clearTimeout(tm);
+      this.waiter = null;
+    }
+    return this.q.shift() || null;
+  }
+  close() { this.input.onmidimessage = null; }
+}
+
+async function handshake(link, tries = 3) {
+  link.drain();
+  for (let t = 0; t < tries; t++) {
+    if (!link.send(HS_QUERY)) return null;
+    const end = Date.now() + 1000;
+    while (Date.now() < end) {
+      const p = await link.read(end - Date.now());
+      if (!p) break;
+      const id = parseIdentity(p);
+      if (id) return id;
+    }
+  }
+  return null;
+}
+
+// an input's output: the output of the same name; when several ports have that name (two FM-1s, as CoreMIDI may list
+// them), the k-th connected output of the name for the k-th connected input (tools/fm1_install.py port_labels)
+function pairOutput(access, input) {
+  const live = (m) => [...m.values()].filter((p) => p.name === input.name && p.state !== "disconnected");
+  const k = live(access.inputs).indexOf(input);
+  return k < 0 ? null : live(access.outputs)[k] || null;
+}
+const FM1_PORT = PORT_RE;                                       // never probe other gear (the FM-1s and SMK-37s)
+
+class Updater {
+  constructor(access, log) {
+    this.access = access;
+    this.log = log || (() => {});
+  }
+
+  // the input ports that may be an FM-1 (connected, a name that matches)
+  candidates() {
+    return [...this.access.inputs.values()].filter((p) => p.state !== "disconnected" && FM1_PORT.test(p.name || ""));
+  }
+
+  // every in/out pair with the same port name that answers the handshake (all: every one, their links closed)
+  async find(filter, all = null) {
+    for (const input of this.candidates()) {
+      const output = pairOutput(this.access, input);
+      if (!output) continue;
+      try { await input.open(); await output.open(); } catch (_) { continue; }
+      const link = new Link(input, output);
+      const id = await handshake(link, 2);
+      if (id && (!filter || filter(id))) {
+        if (!all) return { link, id, name: input.name };
+        all.push({ id, name: input.name, input, output });
+      }
+      link.close();
+    }
+    return null;
+  }
+
+  // several FM-1s (docs/INSTALL-COMPAT.md "Several FM-1s"): every pair that answers -> [{id, name, input, output}]
+  async all(filter) {
+    const got = [];
+    await this.find(filter, got);
+    return got;
+  }
+
+  async waitFor(filter, ms) {
+    const end = Date.now() + ms;
+    while (Date.now() < end) {
+      const dev = await this.find(filter);
+      if (dev) return dev;
+      await sleep(1000);
+    }
+    return null;
+  }
+
+  // serve read requests until the device asks for one of the finish addresses; stops early
+  // when the port disappears (lost: true) instead of waiting out idleMs
+  async serve(link, image, finishAddr, idleMs, onProgress) {
+    let served = 0, last = Date.now();
+    for (;;) {
+      const pkt = await link.read(1000);
+      if (!pkt) {
+        if (link.lost) return { served, finished: false, lost: true };
+        if (Date.now() - last > idleMs) return { served, finished: false };
+        continue;
+      }
+      const r = parseRequest(pkt);
+      if (!r) continue;
+      last = Date.now();
+      if (r.addr === 0xE0000000 || r.addr === 0xF0000000) {
+        link.send(response(r.addr, [...new TextEncoder().encode("success"), 0]));
+        if (r.addr === finishAddr) return { served, finished: true };
+        continue;
+      }
+      if (r.len > MAXDATA || r.addr + r.len > image.length) throw fail("badreq", `bad request ${r.addr.toString(16)}+${r.len}`);
+      await sleep(10);
+      if (!link.send(response(r.addr, Array.from(image.subarray(r.addr, r.addr + r.len)), r.fl))) {
+        return { served, finished: false, lost: true };
+      }
+      served++;
+      if (onProgress) onProgress(served, r.addr);
+    }
+  }
+
+  // full install: running firmware -> loader -> new firmware. anyModel: the package may be for another model of the
+  // same keyboard (an SMK-37 Elite package on a unit that reports SMK-37 Pro); never an FM-1 one on an SMK, nor back
+  async install(image, product, onStep, anyModel = false) {
+    const step = onStep || (() => {});
+    const dev = await this.find((id) => !IS_OTA(id));
+    if (!dev) throw fail("notfound", "FM-1 not found (USB cable, and no other app using it?)");
+    if (OTHER_SMK(dev.id)) { dev.link.close(); throw fail("other", `the keyboard runs a firmware with its own updater (${dev.id.text}): nothing was sent`, dev.id.text); }
+    const [model] = product.split("_");
+    if (dev.id.model !== model && !(anyModel && sameKeyboard(dev.id.model, model))) { dev.link.close(); throw fail("model", `the device is ${dev.id.text}, the package is for ${product}`); }
+    step("start", dev.id.text);
+    dev.link.send(UPGRADE);
+    await sleep(2000);
+    const s1 = await this.serve(dev.link, image, 0xE0000000, 8000, (n) => step("verify", n));
+    dev.link.close();
+    // some firmwares restart into their loader at once, without step 1: such a loader (ours, of this keyboard) goes on
+    const jumped = !s1.finished && s1.lost && s1.served === 0;
+    if (!s1.finished && !jumped) throw fail(s1.lost ? "lost" : "stopped", `the device ${s1.lost ? "was disconnected" : "stopped"} after ${s1.served} requests: nothing was written`);
+    step("loader");
+    await sleep(3000);
+    const ota = await this.waitFor(jumped ? IS_OTA : (id) => id.model === "ota-" + model, jumped ? 15000 : 30000);
+    if (jumped && !(ota && OUR_LOADER(ota.id) && sameKeyboard(ota.id.model.replace(/^ota-/i, ""), dev.id.model) &&
+                    (ota.id.model === "ota-" + model || (anyModel && sameKeyboard(ota.id.model.replace(/^ota-/i, ""), model))))) {
+      if (ota) ota.link.close();
+      throw fail(ota ? "foreign" : "lost", ota ? `the device restarted into the update mode of another firmware (${ota.id.text}): nothing was written`
+        : "the device was disconnected after 0 requests: nothing was written", ota ? ota.id.text : "");
+    }
+    if (!ota) throw fail("noloader", "the update loader did not appear. Replug the USB cable and press Install again: the device stays in update mode until it is finished.");
+    const s2 = await this.write(ota, image, step);
+    if (!s2.finished) throw fail(s2.lost ? "lost" : "stopped", `the loader ${s2.lost ? "was disconnected" : "stopped"} after ${s2.served} requests. Replug and press Install again to resume.`);
+    step("reboot");
+    await sleep(3000);
+    const back = await this.waitFor((id) => !IS_OTA(id), 40000);
+    if (!back) throw fail("noreturn", "the device did not come back: power-cycle it");
+    back.link.close();
+    if (back.id.text !== product) throw fail("mismatch", `installed, but the device reports ${back.id.text}`, back.id.text);
+    step("done", back.id.text);
+    return back.id.text;
+  }
+
+  // step 2 with the loader found by find()/waitFor()
+  async write(ota, image, step) {
+    ota.link.send(UPGRADE);
+    await sleep(2000);
+    const s2 = await this.serve(ota.link, image, 0xF0000000, 180000, (n) => step("write", n));
+    ota.link.close();
+    return s2;
+  }
+
+  // resume: the device is already in update mode (loader) -> true when the write finished and the FM-1 is back with
+  // the identity written. opts.package: the identity of the package being written; opts.product: the official
+  // package's (the return to stock). The loader's model must match it by install()'s rule (the same model, or with
+  // opts.anyModel another model of the same keyboard): an SMK's loader never gets an FM-1 image, nor back, and without
+  // either identity nothing is written
+  async resume(image, onStep, opts = {}) {
+    const want = opts.product || opts.package || "";
+    const model = want.split("_")[0];
+    const ota = await this.find(IS_OTA);
+    if (!ota) return false;
+    if (!OUR_LOADER(ota.id) && !opts.product) {   // (the return to stock: the official loader's own image)
+      ota.link.close();
+      throw fail("foreign", `the device is in the update mode of another firmware (${ota.id.text}): finish that update with its own updater`, ota.id.text);
+    }
+    const lm = ota.id.model.replace(/^ota-/i, "");
+    if (!want || (lm !== model && !(opts.anyModel && sameKeyboard(lm, model)))) {
+      ota.link.close();
+      throw fail("model", `the device is in the update mode of ${ota.id.text}, the package is for ${want || "an unknown model"}`, ota.id.text);
+    }
+    const step = onStep || (() => {});
+    const result = await this.write(ota, image, step);
+    if (!result.finished) return false;
+    {                                             // (the firmware back with the identity written, as before)
+      const product = want;
+      step("reboot");
+      await sleep(3000);
+      const back = await this.waitFor((id) => !IS_OTA(id) && sameKeyboard(id.model, model), 40000);
+      if (!back) throw fail("noreturn", "The FM-1 did not return after resuming the write.");
+      back.link.close();
+      if (back.id.text !== product) throw fail("mismatch", "The FM-1 reports a different firmware after resuming.", back.id.text);
+      step("done", back.id.text);
+    }
+    return true;
+  }
+}
+
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
+// Copyright (C) 2026 ChoralRoot FM-1 contributors (a fork of Felucca)
+// Local, complete archives. Requests name whitelisted objects, never flash addresses (web/EDITOR_PROTOCOL.md).
+// One file format ("felucca-backup" version 1) for every firmware that speaks the protocol; each firmware lists its
+// own objects (BACKUP_LIST) and a restore writes the objects of the file that the connected firmware lists:
+//   Felucca     0 the music now, 1 settings, 2..5 projects, 6 7 user preset banks, 8 the FM6 bank, 32..34 samples
+//   ChoralRoot  1 settings, 6 7 user sound banks, 8 the FM6 bank, 9 the VA patches, 10 11 the FM6 patches (user sounds
+//               1-16, 17-32: voice + function settings), 12 13 the CZ-1 tones (user sounds 1-16, 17-32), 14..21 the
+//               CZ-1 banks A..H, 22 the FM TONE patches (0.14), 23 the favorites (0.22: the marks on sounds; a
+//               firmware before it does not list 23, so a restore there leaves it in the file), 40..49 loop slots (no samples: the
+//               all-synth firmware has no SAMPLE engine; ChoralRoot 0.1 archives with 32 33 restore without them)
+// so a Felucca archive restores its settings, banks and FM6 bank on ChoralRoot (its samples are reported skipped), and
+// a ChoralRoot archive those (its settings record cut back to Felucca's) on Felucca; the rest stays in the file.
+const BACKUP_IDS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 32, 33, 34];   // Felucca's archive (8: the FM6 patch bank)
+const BACKUP_IDS_V1 = BACKUP_IDS.filter((id) => id !== 8);              // Felucca before FM6, and its archives
+const idsOf = (n) => (n === BACKUP_IDS.length ? BACKUP_IDS : n === BACKUP_IDS_V1.length ? BACKUP_IDS_V1 : null);
+const CR_LOOP_IDS = Array.from({ length: 10 }, (_, k) => 40 + k);
+const CR_CZ_BANK_IDS = Array.from({ length: 8 }, (_, k) => 14 + k);
+const CR_BACKUP_IDS = [1, 6, 7, 8, 9, 10, 11, 12, 13, ...CR_CZ_BANK_IDS, 22, 23, ...CR_LOOP_IDS];  // ChoralRoot's (9:
+                                         // the VA patches, 10 11: the FM6 patches, 12 13: the CZ-1 tones, 14..21: the
+                                         // CZ-1 banks, 22: the FM TONE patches, 23: the favorites, 40..49: loops)
+const KNOWN = new Set([...BACKUP_IDS, ...CR_BACKUP_IDS]);
+const BACKUP_CMD = { INFO: 1, LIST: 65, GET: 66, PUT: 67, RESTART: 72 };
+const BACKUP_CHUNK = 256;
+const isSample = (id) => id >= 32 && id <= 34;
+const maxSize = (id) => (isSample(id) || !KNOWN.has(id) ? 81920 : 3840);
+function objectName(id) {
+  if (id === 0) return "current music";
+  if (id === 1) return "settings";
+  if (id >= 2 && id <= 5) return `project ${id - 1}`;
+  if (id === 6 || id === 7) return `user sounds ${id === 6 ? "1-16" : "17-32"}`;
+  if (id === 8) return "FM6 patch bank";
+  if (id === 9) return "VA patches";
+  if (id === 10 || id === 11) return `FM6 patches ${id === 10 ? "1-16" : "17-32"}`;
+  if (id === 12 || id === 13) return `CZ-1 tones ${id === 12 ? "1-16" : "17-32"}`;
+  if (id >= 14 && id <= 21) return `CZ-1 bank ${String.fromCharCode(51 + id)}`;
+  if (id === 22) return "FM TONE patches";
+  if (id === 23) return "favorites";
+  if (isSample(id)) return `sample slot ${id - 31}`;
+  if (id >= 40 && id <= 49) return `loop slot ${id - 39}`;
+  if (id >= 50 && id <= 62) {               // 0.22, the sound pool: a bank of 10 slots (the last: 121..128)
+    const a = (id - 50) * 10 + 1;
+    return `user sounds ${String(a).padStart(3, "0")}-${String(Math.min(a + 9, 128)).padStart(3, "0")}`;
+  }
+  return `object ${id}`;
+}
+const bkU32 = (n) => Array.from({ length: 5 }, (_, i) => (n >>> (i * 7)) & (i === 4 ? 15 : 127));
+const bkR32 = (a, off = 0) => {
+  if (a.length < off + 5 || a[off + 4] > 15) throw new Error("Invalid archive number");
+  return (a[off] | a[off + 1] << 7 | a[off + 2] << 14 | a[off + 3] << 21 | a[off + 4] << 28) >>> 0;
+};
+function bkPack(bytes) {
+  const a = [];
+  for (let off = 0; off < bytes.length; off += 7) {
+    const chunk = bytes.subarray(off, off + 7);
+    a.push(chunk.reduce((m, b, i) => m | (b >>> 7) << i, 0), ...chunk.map((b) => b & 127));
+  }
+  return a;
+}
+function bkUnpack(a, size) {
+  const out = new Uint8Array(size); let i = 0, j = 0;
+  while (j < size) {
+    const n = Math.min(7, size - j), mask = a[i++];
+    if (mask == null || mask >>> n) throw new Error("Invalid archive bytes");
+    for (let k = 0; k < n; k++) {
+      if (a[i] == null || a[i] > 127) throw new Error("Short archive chunk");
+      out[j++] = a[i++] | (mask >>> k & 1) << 7;
+    }
+  }
+  if (i !== a.length) throw new Error("Trailing archive bytes");
+  return out;
+}
+function bkCrc(bytes) {
+  let c = 0xffffffff;
+  for (const b of bytes) {
+    c ^= b;
+    for (let k = 0; k < 8; k++) c = c >>> 1 ^ (c & 1 ? 0xedb88320 : 0);
+  }
+  return (~c) >>> 0;
+}
+const BK_RC = { 1: "Invalid archive object", 2: "Archive data failed validation", 3: "Stop playback first (the loop on the FM-1)",
+  4: "Flash write failed", 5: "Start a fresh backup" };
+function bkCheck(rc) {
+  if (rc) { const e = new Error(BK_RC[rc] || `Archive error ${rc}`); e.rc = rc; throw e; }
+}
+// BACKUP_LIST's reply -> [{id, size, crc}]: any firmware's list (distinct ids; Felucca's, ChoralRoot's or unknown ones)
+function bkManifest(a) {
+  if (a[0] !== 1) throw new Error("Unsupported archive protocol");
+  bkCheck(a[1]);
+  const n = a[2];
+  if (!n || a.length !== 3 + n * 11) throw new Error("Incomplete archive manifest");
+  const seen = new Set();
+  return Array.from({ length: n }, (_, i) => {
+    const p = 3 + i * 11, id = a[p];
+    if (seen.has(id)) throw new Error("Unexpected archive object");
+    seen.add(id);
+    const size = bkR32(a, p + 1), crc = bkR32(a, p + 6);
+    if (size > maxSize(id) || (!size && crc)) throw new Error("Archive object too large");
+    return { id, size, crc };
+  });
+}
+const bkBase64 = (bytes) => { let s = ""; for (const b of bytes) s += String.fromCharCode(b); return btoa(s); };
+const backupFamily = (firmware) => (/^choralroot/i.test(firmware || "") ? "choralroot" : /^felucca/i.test(firmware || "") ? "felucca" : "other");
+function readBackup(file) {
+  if (typeof file === "string") file = JSON.parse(file);
+  if (!file || file.format !== "felucca-backup" || file.version !== 1 || !Array.isArray(file.objects) || !file.objects.length)
+    throw new Error("Not a complete FM-1 backup");
+  const felucca = backupFamily(file.firmware) === "felucca", ids = idsOf(file.objects.length), seen = new Set();
+  if (felucca && (!ids || file.objects.some((o, i) => !o || o.id !== ids[i])))   // Felucca writes its whole set, in order
+    throw new Error("Not a complete Felucca backup");
+  const objects = file.objects.map((o) => {
+    if (!o || !Number.isInteger(o.id) || o.id < 0 || o.id > 127 || seen.has(o.id) || !Number.isInteger(o.size) || o.size < 0 ||
+        o.size > maxSize(o.id) || !Number.isInteger(o.crc) || o.crc < 0 || o.crc > 0xffffffff || typeof o.data !== "string" ||
+        o.data.length !== 4 * Math.ceil(o.size / 3) || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(o.data))
+      throw new Error("Invalid backup object");
+    seen.add(o.id);
+    const bytes = Uint8Array.from(atob(o.data), (c) => c.charCodeAt(0));
+    if (bytes.length !== o.size || bkCrc(bytes) !== o.crc) throw new Error("Backup checksum mismatch");
+    if (isSample(o.id) && o.size) {
+      if (o.size < 512) throw new Error("Short sample backup");
+      const view = new DataView(bytes.buffer), length = view.getUint32(16, true), count = bytes[6];
+      if (view.getUint32(0, true) !== 0x504d5346 || view.getUint16(4, true) !== 1 || !count || count > 16 ||
+          length !== o.size - 512 || bkCrc(bytes.subarray(512)) !== view.getUint32(20, true)) throw new Error("Invalid sample backup");
+      for (let z = 0; z < count; z++) {
+        const off = 32 + z * 28, start = view.getUint32(off,true), n = view.getUint32(off+4,true),
+          ls = view.getUint32(off+8,true), le = view.getUint32(off+12,true), rate = view.getUint32(off+16,true);
+        if (!n || start > length || Math.ceil(n/2) > length - start || n > 163840 || ls > le || le >= n ||
+            !rate || rate > 262144 || bytes[off+24] > 88 || bytes[off+25] > bytes[off+26]) throw new Error("Invalid sample zone");
+      }
+    }
+    return { ...o, bytes };
+  });
+  const by = new Map(objects.map((o) => [o.id, o]));
+  if ((by.has(0) && !by.get(0).size) || (felucca && !by.get(1).size)) throw new Error("Backup is missing the current music or settings");
+  if (!objects.some((o) => o.size)) throw new Error("The backup holds nothing");
+  return { ...file, objects };
+}
+async function captureBackup(request, firmware, onProgress = () => {}) {
+  const manifest = bkManifest(await request([BACKUP_CMD.LIST, []], { timeout: 3000, retries: 0 }));
+  const objects = [], total = manifest.reduce((n, o) => n + o.size, 0); let done = 0;
+  for (const o of manifest) {
+    const bytes = new Uint8Array(o.size);
+    for (let off = 0; off < o.size; off += BACKUP_CHUNK) {
+      const size = Math.min(BACKUP_CHUNK, o.size - off);
+      const a = await request([BACKUP_CMD.GET, [o.id, ...bkU32(off), size & 127, size >>> 7]], { timeout: 1000, retries: 1 });
+      bkCheck(a[1]);
+      if (a[0] !== o.id || bkR32(a, 2) !== off || (a[7] | a[8] << 7) !== size) throw new Error("Unexpected backup reply");
+      bytes.set(bkUnpack(a.slice(9), size), off);
+      done += size; onProgress(done, total);
+    }
+    if (bkCrc(bytes) !== o.crc) throw new Error("The device changed during backup. Try again while stopped.");
+    objects.push({ ...o, data: bkBase64(bytes) });
+  }
+  const file = { format: "felucca-backup", version: 1, firmware, created: new Date().toISOString(), objects };
+  readBackup(file); return file;
+}
+// the settings record across firmwares: ChoralRoot's (PER5) is Felucca's (PER4) + its own 192-byte block at the end
+const PER4 = 0x50455234, PER5 = 0x50455235, CR_BLOCK = 192;
+function adaptObject(o, dev) {
+  if (o.id !== 1 || !dev.size || o.size === dev.size || o.size !== dev.size + CR_BLOCK) return o;
+  const view = new DataView(o.bytes.buffer, o.bytes.byteOffset, o.size);
+  if (view.getUint32(0, true) !== PER5) return o;
+  const bytes = o.bytes.slice(0, dev.size);
+  new DataView(bytes.buffer).setUint32(0, PER4, true);
+  return { ...o, bytes, size: bytes.length, crc: bkCrc(bytes), converted: true };
+}
+const bkSleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// restore the objects of `file` that the connected firmware lists; opts.onBusy() while the FM-1 answers busy (a loop
+// plays: rc 3, retried each second, opts.busyTries times). -> the archive with restored / skipped ids
+async function restoreBackup(request, file, onProgress = () => {}, opts = {}) {
+  const archive = readBackup(file); // Validate every byte before the first destructive request.
+  const device = new Map(bkManifest(await request([BACKUP_CMD.LIST, []], { timeout: 3000, retries: 0 })).map((o) => [o.id, o]));
+  const plan = archive.objects.filter((o) => device.has(o.id)).map((o) => adaptObject(o, device.get(o.id)));
+  const skipped = archive.objects.filter((o) => !device.has(o.id)).map((o) => o.id), restored = [];
+  const total = plan.reduce((n, o) => n + o.size, 0); let done = 0;
+  const busyTries = opts.busyTries ?? 120;
+  const ask = async (r, o = {}) => request(r, { timeout: 4000, retries: 0, ...o });
+  const retry = async (f) => {
+    for (let i = 0; ; i++) {
+      try { return await f(); }
+      catch (e) { if (e.rc !== 3 || i >= busyTries) throw e; if (opts.onBusy) opts.onBusy(); await bkSleep(1000); }
+    }
+  };
+  const put = async (args) => { const a = await ask([BACKUP_CMD.PUT, args]); bkCheck(a[2]); return a; };
+  // Restore the live music last, the settings before it. Objects commit one by one; a disconnect can leave a partial restore.
+  const order = [...plan.filter((o) => o.id > 1), ...plan.filter((o) => o.id === 1), ...plan.filter((o) => o.id === 0)];
+  for (const o of order) {
+    if (isSample(o.id)) {
+      const slot = o.id - 32;
+      const check = (a) => { if (a[0] !== slot) throw new Error("Unexpected sample reply"); bkCheck(a.at(-1)); };
+      if (!o.size) await retry(async () => check(await ask([14, [slot]])));
+      else {
+        await retry(async () => check(await ask([11, [slot]])));
+        for (let off = 512; off < o.size; off += BACKUP_CHUNK) {
+          const chunk = o.bytes.subarray(off, off + BACKUP_CHUNK);
+          await retry(async () => check(await ask([12, [slot, off & 127, off >>> 7 & 127, off >>> 14 & 127, ...bkPack(chunk)]])));
+          done += chunk.length; onProgress(done, total);
+        }
+        await retry(async () => check(await ask([13, [slot, ...bkPack(o.bytes.subarray(0, 480))]])));
+        done += 512; onProgress(done, total);
+      }
+    } else {
+      try { await retry(() => put([0, o.id, ...bkU32(o.size), ...bkU32(o.crc)])); }
+      catch (e) { if (o.converted && e.rc === 1) { skipped.push(o.id); continue; } throw e; }
+      try {
+        for (let off = 0; off < o.size; off += BACKUP_CHUNK) {
+          const chunk = o.bytes.subarray(off, off + BACKUP_CHUNK);
+          await put([1, o.id, ...bkU32(off), ...bkPack(chunk)]);
+          done += chunk.length; onProgress(done, total);
+        }
+        await retry(() => put([2, o.id]));
+      } catch (e) {
+        await put([3, o.id]).catch(() => {});
+        if (o.converted && e.rc === 2) { skipped.push(o.id); continue; }   // another firmware's settings: best effort
+        throw e;
+      }
+    }
+    restored.push(o.id);
+  }
+  return { ...archive, restored, skipped };
+}
+// the unit's ID in ChoralRoot's INFO reply (cr_backup.c CRB_INFO, docs/INSTALL-COMPAT.md "Several FM-1s"): after the
+// version's NUL, Felucca's 7 bytes (no engines), the tagged fields (tag, length, value): 42 01 03, 43 01 03, then 49 08
+// and the ID's 8 hex digits -> "A1B2C3D4"; null without that tag (a ChoralRoot from before it, SAFE MODE)
+function unitIdOf(a) {
+  let p = a.indexOf(0);
+  if (p < 0) return null;
+  for (p += 8; p + 2 <= a.length && p + 2 + a[p + 1] <= a.length; p += 2 + a[p + 1]) {
+    const v = String.fromCharCode(...a.slice(p + 2, p + 2 + a[p + 1]));
+    if (a[p] === 0x49 && /^[0-9A-F]{8}$/.test(v)) return v;
+  }
+  return null;
+}
+// INFO -> {version, family, unitId (ChoralRoot's, or null)}; null when the firmware does not answer (stock, an update loader)
+async function deviceInfo(request) {
+  let a;
+  try { a = await request([BACKUP_CMD.INFO, []], { timeout: 1500, retries: 0 }); } catch (_) { return null; }
+  const end = a.indexOf(0), version = String.fromCharCode(...a.slice(0, end < 0 ? a.length : end));
+  const family = backupFamily(version);
+  return { version, family, unitId: family === "choralroot" ? unitIdOf(a) : null };
+}
+// ChoralRoot: restart after a restore, so everything restored loads from flash (its settings wait for it)
+async function restartDevice(request) {
+  const a = await request([BACKUP_CMD.RESTART, []], { timeout: 2000, retries: 0 });
+  bkCheck(a[0]);
+}
+const backupFileName = (firmware, date = new Date()) =>
+  `${backupFamily(firmware) === "other" ? "fm1" : backupFamily(firmware)}-backup-${date.toISOString().slice(0, 10).replace(/-/g, "")}.json`;
+
+// Installer connection: no editor page or watcher owns this input simultaneously.
+class BackupConnection {
+  constructor(input, output) {
+    this.input = input; this.output = output; this.pending = null;
+    input.onmidimessage = (e) => {
+      const d = e.data;
+      if (d.length < 6 || d[0] !== 240 || d[1] !== 125 || d[2] !== 70 || d[3] !== 76 || d.at(-1) !== 247) return;
+      if (this.pending?.cmd === d[4]) { const p = this.pending; this.pending = null; clearTimeout(p.timer); p.resolve(Array.from(d.slice(5, -1))); }
+    };
+  }
+  async request([cmd, args], opt = {}) {
+    if (this.pending || this.closed || this.input.state === "disconnected" || this.output.state === "disconnected") throw new Error("Backup connection closed or busy");
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => { this.pending = null; reject(new Error("Backup timed out. Keep the FM-1 connected and stopped.")); }, opt.timeout || 1200);
+      this.pending = { cmd, timer, resolve, reject };
+      try { this.output.send([240, 125, 70, 76, cmd, ...args, 247]); }
+      catch (e) { clearTimeout(timer); this.pending = null; reject(e); }
+    });
+  }
+  close() {
+    this.closed = true; this.input.onmidimessage = null;
+    if (this.pending) { const p = this.pending; this.pending = null; clearTimeout(p.timer); p.reject(new Error("Backup connection closed")); }
+  }
+}
+
+// ---- a loop slot's record (objects 40..49, docs/LOOPER.md "Slots and the record"; firmware cr_loop.c cr_loop_pack):
+// "CRL1", version 1, the time signature (0 4/4, 1 3/4, 2 6/8), the layers, flags (0; 0.18: 1 = it holds bass-side notes;
+// not read here), len u32 (ticks), the events u16, ppqn u16,
+// then per layer its event count u16, then 7 bytes per event. -> null (empty), or the header with the length in bars
+// (cr_loop_bar: 4 quarter notes in 4/4, 3 otherwise) and valid (the header's checks of cr_loop_unpack)
+const LOOP_MAGIC = 0x314C5243, LOOP_PPQN = 96, LOOP_SIGS = ["4/4", "3/4", "6/8"];
+function loopHeader(bytes) {
+  if (!bytes || !bytes.length) return null;
+  if (bytes.length < 16) return { valid: false, size: bytes.length };
+  const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const sig = bytes[5], nlayers = bytes[6], len = v.getUint32(8, true), nev = v.getUint16(12, true), ppqn = v.getUint16(14, true);
+  let counted = 0;
+  for (let l = 0; l < nlayers && 16 + 2 * l + 1 < bytes.length; l++) counted += v.getUint16(16 + 2 * l, true);
+  const valid = v.getUint32(0, true) === LOOP_MAGIC && bytes[4] === 1 && sig < LOOP_SIGS.length && ppqn === LOOP_PPQN &&
+    nlayers > 0 && nlayers <= 32 && nev > 0 && len > 0 && bytes.length >= 16 + 2 * nlayers + 7 * nev && counted === nev;
+  const bar = (sig === 0 ? 4 : 3) * (ppqn || LOOP_PPQN);
+  return { valid, sig, sigName: LOOP_SIGS[sig] || "?", nlayers, len, nev, ppqn, bars: len / bar, size: bytes.length };
+}
+
+const meta = {"repo":"https://github.com/davidpryan/ChoralRootFM1","releases":[{"version":"0.29.2-trs-smk37","base":"0.29.2","date":"2026-11-05","tag":"v0.29.2-trs-smk37","title":"TRS MIDI OUT: the 3.5 mm jack plays an FM-1 on LOOM-8, or any synth","bullets":["The keyboard's 3.5 mm jack is now a MIDI output. With Options > TRS MIDI Out On (the default) it carries what USB MIDI out carries, with or without a computer.","On the jack: the chord on the MIDI Perform channel (1), the bass on MIDI Bass (2), the wheels, the pedal, and the MIDI clock with start and stop when MIDI Clock is Out.","An FM-1 running LOOM-8 on the other end of a TRS cable plays the chord on its track 1 and the bass on its track 2 (its tracks listen on channels 1 to 8). Set its CLOCK to receive to follow the keyboard's tempo.","Options > TRS MIDI Out Off leaves the jack quiet; USB MIDI keeps working either way. The option is kept across power-off with the global save.","Everything else is ChoralRoot 0.29.2 on the SMK-37, as the 0.29-smk37 build: the same sounds, screens and controls, with your settings, sounds, loops and favourites stored as before."],"notes":["A fork of Quixotic7's ChoralRoot (the TRS output was asked for in its issue 38). Community-tested, not tested by the maintainer; the jack has not yet been tried on a unit by this fork either: the UART setup is the stock firmware's as genkigenki's porting guide read it, and the same driver ships in Vector37. If the option's line on the keyboard reads 'UART not answering', please report it.","Use a type A 3.5 mm to MIDI adapter for a DIN synth; a plain TRS cable reaches an FM-1's MIDI IN jack. SysEx (backups, the sound editors' dumps) stays on USB.","Updating from 0.29-smk37 keeps your settings, sounds, loops and favourites; going back to it works too (it simply does not use the jack)."],"models":{"pro":{"product":"SMK-37 Pro_920","pkg":"../../firmware/smk37/choralroot-0.29.2-trs-smk37.fwsc","sha256":"ee9c9875208a70558653f81358db1abb124b58cd54606d89771125c60f224478","size":651496,"pkg_1core":"../../firmware/smk37/choralroot-0.29.2-trs-smk37-1core.fwsc","sha256_1core":"facf8ac7733f14b616f687eea70c982d4dcc76dce17d59f832b79e3b5a4715c3","size_1core":651496},"elite":{"product":"SMK-37 Elite_920","pkg":"../../firmware/smk37/choralroot-0.29.2-trs-smk37-elite.fwsc","sha256":"576d6897c33ed8b07b4170097859c1b9afd5f1d3450bdc29ef5d0edc99d0bd78","size":651500,"pkg_1core":"../../firmware/smk37/choralroot-0.29.2-trs-smk37-elite-1core.fwsc","sha256_1core":"6e265c0633caba1b0ca11e71a274947a373c348b8ef31a0143e765ace281ba80","size_1core":651500},"mke":{"product":"MKE-P37_920","pkg":"../../firmware/smk37/choralroot-0.29.2-trs-smk37-mke.fwsc","sha256":"404b0aec4db8edd505f00574e2a6c797b0fa47a9a2647e11c07b66a503f9cfce","size":651492,"pkg_1core":"../../firmware/smk37/choralroot-0.29.2-trs-smk37-mke-1core.fwsc","sha256_1core":"79b5f421d246e390e04e7141a91a3ec82081e9a8ed5038b120338b1a98b1e03c","size_1core":651492}}}]};
+
+const TEXT = {
+  en: {
+    sub: "Community test builds · community-tested, not tested by the maintainer · port by genkigenki",
+    riskTitle: "Before you install",
+    risk1: "This is a test build. The maintainer has no SMK-37: nothing here has been tried on a unit by the project. It may have bugs, and it may stop working.",
+    risk2: "Have M-VAVE's stock package for your model and their updater, M-UPGRADE, at hand: that is the way back.",
+    risk3: "The first start clears the stock firmware's settings and any other firmware's data in ChoralRoot's flash areas. The keyboard's calibration, Bluetooth pairing and key areas are never written.",
+    risk4: "Keep the USB cable connected and the computer awake until the keyboard has restarted.",
+    risk5: "Installing other firmware is at your own risk.",
+    accept: "I have read this, I have M-VAVE's stock package and M-UPGRADE for my model, and I install at my own risk.",
+    acceptFirst: "Tick the box above first.",
+    skipBackup: "Skip the backup (a keyboard running ChoralRoot is backed up to a file first)",
+    install: "Install ChoralRoot {version}",
+    std: "Standard (two cores)",
+    one: "Single core (if the standard one crashes or freezes)",
+    nomidi: "This browser has no Web MIDI. Use Chrome or Edge on a computer.",
+    denied: "MIDI (SysEx) access was not allowed. Allow MIDI in the site settings (address bar) and press Install again.",
+    notfound: "No keyboard found. Check the USB cable (a data cable), close other apps that use MIDI, and press Install again.",
+    fm1: "This is an FM-1: this page installs the SMK-37 test builds only. Use the FM-1 installer. Nothing was written.",
+    notsmk: "The connected device is not an SMK-37 (it reports {detail}). Nothing was written.",
+    several: "More than one keyboard is connected: unplug the others and press Install again. Nothing was written.",
+    model: "The keyboard and the package are for different devices. Nothing was written. ",
+    other: "This keyboard runs one of ChanceTheMaker's SMK firmwares (Felucca SMK, Sloop SMK, Melodee SMK, Doom). They have their own updater, which takes only their packages, so ChoralRoot cannot be installed over them from here. Nothing was written.",
+    foreign: "The keyboard is in the update mode of another firmware: nothing was written. Finish that update with its own updater: ",
+    refused: "ChoralRoot is not installed over this firmware: {detail}. Return to the stock firmware with M-UPGRADE first. Nothing was written.",
+    loadfail: "The package could not be downloaded: ",
+    badpkg: "The package is not the one this page lists (its checksum or identity differ). Nothing was written.",
+    backup: "Backing up the keyboard: ",
+    backupSaved: "Backup saved: ",
+    noBackupConfirm: "The keyboard could not be backed up. Install anyway?",
+    cancelled: "Cancelled. Nothing was written.",
+    start: "Starting the update…",
+    verify: "Checking…",
+    loader: "Waiting for the update mode…",
+    write: "Writing… do not unplug the keyboard.",
+    reboot: "Restarting…",
+    done: "Done.",
+    stopped: "The write stopped. Switch the keyboard on again (hold OCTAVE- if needed) and press Install again: it finishes.",
+    lost: "The USB connection was lost. Replug it, switch the keyboard on (hold OCTAVE- if it does not start in update mode) and press Install again.",
+    noloader: "The keyboard in update mode was not found. Replug the USB cable and press Install again (it stays in update mode until it is finished).",
+    noreturn: "The keyboard did not come back. Switch it off and on.",
+    mismatch: "The keyboard reports a different firmware after the install: ",
+    badreq: "The keyboard asked for something unexpected; nothing more was written. Press Install again.",
+    resume: "The keyboard is in update mode: finishing the install for ",
+    leave: "The install is still running.",
+    error: "Error: ",
+    interrupted: "The install did not finish. Switch the keyboard on again (hold OCTAVE- while switching on if it does not show the update mode: OCTAVE-'s light flashes three times) and press Install again: it continues where it stopped. To give up, install M-VAVE's stock package with M-UPGRADE.",
+    doneTitle: "ChoralRoot is installed.",
+    doneText: "The keyboard restarted with it. Report what you find in the project's issues; SMK37.md lists what to test.",
+    notesTitle: "This build",
+    docLink: "SMK37.md: the controls, what to test, building it yourself",
+    backTitle: "Going back",
+    backText: "Install M-VAVE's firmware package for your model with M-VAVE's updater, M-UPGRADE. It works directly: the installed package keeps the keyboard's model name, and the calibration was never written.",
+    filesTitle: "Files",
+    licence: "Free software under the GNU General Public License, version 3 only; the packages hold three JieLi AC79 SDK files under Apache-2.0.",
+    model_pro: "SMK-37 Pro (and Starrykey 37 Play)", model_elite: "SMK-37 Elite", model_mke: "MKE-P37",
+  },
+};
+const lang = "en";
+const $ = (id) => document.getElementById(id);
+const t = (k) => TEXT[lang][k];
+const sayK = (k, arg = "") => { $("status").textContent = t(k).replace("{detail}", arg) + (t(k).includes("{detail}") ? "" : arg); };
+const say = (txt) => { $("status").textContent = txt; };
+const log = (s) => { $("log").textContent += s + "\n"; };
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const coded = (code, detail = "") => Object.assign(new Error(code + (detail ? ": " + detail : "")), { code, detail });
+for (const el of document.querySelectorAll("[data-t]")) el.textContent = t(el.dataset.t);
+if (meta.repo) {                                   // (a fork's site: its SMK37.md, its source)
+  $("doc").href = meta.repo + "/blob/main/SMK37.md";
+  $("src").href = meta.repo;
+}
+
+// the keyboard's model name -> the package: the three model names have their own; every other name of the SMK-37
+// (the Starrykey 37 Play, the bare SMK-37 of other firmwares) takes the Pro's, written with the same-keyboard rule
+const MODELS = { "SMK-37 PRO": "pro", "SMK-37 ELITE": "elite", "MKE-P37": "mke" };
+function modelOf(name) {
+  const n = String(name || "").replace(/^ota-/i, "");
+  const k = MODELS[n.toUpperCase()];
+  if (k) return { key: k, any: false };
+  return SMK_FAMILY.test(n) ? { key: "pro", any: true } : null;
+}
+
+const releases = meta.releases || [];
+let sel = 0, oneCore = false, writing = false;
+const cur = () => releases[sel];
+const pkgOf = (rel, key) => {
+  const m = rel.models[key];
+  return oneCore && m.pkg_1core ? { url: m.pkg_1core, sha256: m.sha256_1core, product: m.product }
+    : { url: m.pkg, sha256: m.sha256, product: m.product };
+};
+function render() {
+  const rel = cur();
+  if (!rel) { $("rel").textContent = "No test build is published yet."; $("go").disabled = true; return; }
+  $("rel").innerHTML = `<b>ChoralRoot ${esc(rel.version)}</b> · ${esc(rel.date || "")}${rel.title ? " · " + esc(rel.title) : ""}`;
+  $("go").textContent = t("install").replace("{version}", rel.version);
+  $("go").disabled = writing || !$("accept").checked;
+  $("versions").innerHTML = releases.length > 1 ? releases.map((r, i) =>
+    `<button class="chip" data-v="${i}" aria-pressed="${i === sel}">${esc(r.version)}</button>`).join("") : "";
+  const has1 = Object.values(rel.models).every((m) => m.pkg_1core);
+  $("variants").innerHTML = has1 ? [false, true].map((o) =>
+    `<button class="chip" data-o="${o ? 1 : 0}" aria-pressed="${o === oneCore}">${esc(t(o ? "one" : "std"))}</button>`).join("") : "";
+  if (!has1) oneCore = false;
+  $("bullets").innerHTML = (rel.bullets || []).map((b) => `<li>${esc(b)}</li>`).join("");
+  $("notes").innerHTML = (rel.notes || []).map((b) => `<li>${esc(b)}</li>`).join("");
+  $("files").innerHTML = Object.entries(rel.models).map(([k, m]) =>
+    `<li><b>${esc(t("model_" + k))}</b> · ${esc(m.product)}<br><a href="${esc(m.pkg)}" download>${esc(m.pkg.split("/").pop())}</a> ` +
+    `<code>sha256 ${esc(m.sha256)}</code>` + (m.pkg_1core ? `<br><a href="${esc(m.pkg_1core)}" download>${esc(m.pkg_1core.split("/").pop())}</a> ` +
+    `<code>sha256 ${esc(m.sha256_1core)}</code>` : "") + "</li>").join("");
+}
+$("versions").addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-v]"); if (b && !writing) { sel = +b.dataset.v; render(); } });
+$("variants").addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-o]"); if (b && !writing) { oneCore = b.dataset.o === "1"; render(); } });
+$("accept").addEventListener("change", render);
+window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault(); e.returnValue = t("leave"); } });
+
+// the package for a model, checked against the list (sha256) and its own identity before anything is sent
+async function fetchPackage(rel, key) {
+  const p = pkgOf(rel, key);
+  let raw;
+  try {
+    const r = await fetch(p.url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    raw = new Uint8Array(await r.arrayBuffer());
+  } catch (e) { throw coded("loadfail", e.message); }
+  if (await sha256hex(raw) !== p.sha256 || productOf(raw) !== p.product) throw coded("badpkg");
+  log(`package ${p.url.split("/").pop()}: ${p.product}, sha256 ok`);
+  return { image: logicalImage(raw), product: p.product };
+}
+async function takeBackup(dev) {                 // a keyboard running ChoralRoot: its data to a file; others: nothing
+  const link = new BackupConnection(dev.input, dev.output);
+  try {
+    const req = (r, o) => link.request(r, o), info = await deviceInfo(req);
+    if (!info || info.family !== "choralroot") { log(`backup: ${info ? info.version : "no answer"}: nothing to back up`); return info; }
+    const archive = await captureBackup(req, info.version, (d, total) => sayK("backup", `${Math.round(d / Math.max(1, total) * 100)}%`));
+    const url = URL.createObjectURL(new Blob([JSON.stringify(archive, null, 1)], { type: "application/json" }));
+    const a = document.createElement("a"); a.href = url; a.download = backupFileName(archive.firmware);
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    sayK("backupSaved", a.download);
+    return info;
+  } finally { link.close(); }
+}
+
+$("go").addEventListener("click", async () => {
+  if (writing) return;
+  if (!$("accept").checked) { sayK("acceptFirst"); return; }
+  if (!navigator.requestMIDIAccess) { sayK("nomidi"); return; }
+  const rel = cur();
+  let began = false, okDone = false;
+  writing = true; render();
+  $("interrupted").hidden = true; $("done").hidden = true; $("bar").value = 0;
+  try {
+    let midi;
+    try { midi = await navigator.requestMIDIAccess({ sysex: true }); } catch (e) { throw coded("denied"); }
+    const up = new Updater(midi, log);
+    const all = await up.all(null);
+    if (!all.length) throw coded("notfound");
+    if (all.length > 1) throw coded("several");
+    const id = all[0].id;
+    log(`device: ${id.text} (port ${all[0].name})`);
+    const m = modelOf(id.model);
+    if (!m) throw /^(ota-)?FM-1$/i.test(id.model) ? coded("fm1") : coded("notsmk", id.text);
+    if (OTHER_SMK(id)) throw coded("other");
+    const total = 74 + 1167;
+    const step = (k, a) => {
+      log(`${k} ${a ?? ""}`);
+      if (k === "start") { began = true; sayK("start"); }
+      if (k === "verify") { sayK("verify"); $("bar").value = (a / total) * 100; }
+      if (k === "loader") sayK("loader");
+      if (k === "write") { began = true; sayK("write"); $("bar").value = ((74 + a) / total) * 100; }
+      if (k === "reboot") sayK("reboot");
+      if (k === "done") { $("bar").value = 100; sayK("done"); }
+    };
+    if (/^ota-/i.test(id.model)) {               // an interrupted install: its loader's model's package
+      if (!OUR_LOADER(id)) throw coded("foreign", id.text);
+      const p = await fetchPackage(rel, m.key);
+      sayK("resume", id.text);
+      began = true;
+      okDone = await up.resume(p.image, step, { package: p.product, anyModel: m.any });
+      if (!okDone) throw coded("stopped");
+    } else {
+      const fw = await (async () => {           // which firmware runs (the INFO version tells the ports apart)
+        const link = new BackupConnection(all[0].input, all[0].output);
+        let info = null;
+        try { info = await deviceInfo((r, o) => link.request(r, o)); } finally { link.close(); }
+        return classifyFirmware(id.text, info && info.version);
+      })();
+      log(`running: ${fw.name} -> ${fw.verdict} (${fw.kind})`);
+      if (fw.verdict !== "allow") throw coded(fw.kind === "other" ? "other" : "refused", fw.name);
+      const p = await fetchPackage(rel, m.key);
+      if (!$("skip-backup").checked) {
+        try { await takeBackup(all[0]); }
+        catch (e) { log(`backup: ${e.message}`); if (!confirm(t("noBackupConfirm"))) throw coded("cancelled"); }
+      }
+      log(`install: ChoralRoot ${rel.version} ${oneCore ? "(single core) " : ""}for ${id.text}`);
+      await up.install(p.image, p.product, step, m.any);
+      okDone = true;
+    }
+  } catch (e) {
+    if (e && e.code && TEXT[lang][e.code]) sayK(e.code, e.code === "other" || e.code === "several" ? "" : e.detail || "");
+    else sayK("error", e && e.message);
+    log(String(e && e.stack || e));
+  }
+  writing = false; render();
+  if (okDone) $("done").hidden = false;
+  else if (began) $("interrupted").hidden = false;
+});
+
+render();
+if (!navigator.requestMIDIAccess) sayK("nomidi");
+</script>
+</body>
+</html>
